@@ -1,0 +1,41 @@
+[
+  {
+    "id": "1",
+    "time": "09:00 AM",
+    "date": "21 Abr",
+    "name": "Ricardo Arjona",
+    "plate": "LPX-442",
+    "service": "Sintético Premium",
+    "status": "Confirmado",
+    "color": "emerald-500",
+    "totalPrice": 45500,
+    "email": "ricardo@arjona.com",
+    "phone": "+54 9 11 1111-1111"
+  },
+  {
+    "id": "2",
+    "time": "10:30 AM",
+    "date": "21 Abr",
+    "name": "Marta Sanchez",
+    "plate": "KJH-891",
+    "service": "Semi-sintético",
+    "status": "Pendiente",
+    "color": "amber-400",
+    "totalPrice": 37500,
+    "email": "marta@sanchez.com",
+    "phone": "+54 9 11 2222-2222"
+  },
+  {
+    "id": "3",
+    "time": "11:15 AM",
+    "date": "22 Abr",
+    "name": "Sebastian Vettel",
+    "plate": "F1-CAR-05",
+    "service": "Diagnóstico de Motor",
+    "status": "Confirmado",
+    "color": "emerald-500",
+    "totalPrice": 15000,
+    "email": "seb@vettel.de",
+    "phone": "+49 11 3333-3333"
+  }
+]

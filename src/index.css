@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --font-manrope: "Manrope", sans-serif;
+  --color-primary: #570013;
+  --color-primary-container: #800020;
+}
+
+@layer base {
+  body {
+    @apply font-manrope bg-[#f9f9f9] text-[#1a1c1c];
+  }
+}
+
+@layer utilities {
+  .velocity-gradient {
+    background: linear-gradient(135deg, #570013 0%, #800020 100%);
+  }
+}
