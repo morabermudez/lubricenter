@@ -46,5 +46,21 @@
     "date": "19 Jun",
     "status": "Confirmado",
     "color": "amber-400"
+  },
+  {
+    "id": "1782134484835",
+    "name": "Mario Lopez",
+    "email": "admin@lubricenter.pro",
+    "phone": "3541 728234",
+    "plate": "AG184BI",
+    "oilType": "Semi-sintético (10W-40)",
+    "day": 30,
+    "month": "Junio",
+    "time": "11:00 AM",
+    "totalPrice": 37500,
+    "depositPrice": 18750,
+    "date": "30 Jun",
+    "status": "Pendiente",
+    "color": "amber-400"
   }
 ]
