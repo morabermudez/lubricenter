@@ -6,6 +6,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { fetchAppointments, deleteAppointment, updateAppointment } from "../services/bookingService";
+import Notificaciones from './Notificaciones';
+
+
 
 interface AdminAgendaProps {
   onNavigate: (view: string) => void;
@@ -185,6 +188,7 @@ export default function AdminAgenda({ onNavigate }: AdminAgendaProps) {
                 <span className="material-symbols-outlined">add_circle</span>
                 Agendar Turno
               </button>
+              <Notificaciones />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">

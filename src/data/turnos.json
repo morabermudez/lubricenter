@@ -1,0 +1,26 @@
+[
+  {
+    "id_reserva": 1,
+    "id_cli": "Pedro dou",
+    "telefono": "54541200486",
+    "fec_res": "2026-06-19",
+    "hora": "09:00",
+    "tipo_aceite": "Cambio de aceite y filtro"
+  },
+  {
+    "id_reserva": 2,
+    "id_cli": "Mora Bermudez",
+    "telefono": "5493541632265",
+    "fec_res": "2026-06-19",
+    "hora": "15:30",
+    "tipo_aceite": "Revisión general y fluidos"
+  },
+  {
+    "id_reserva": 3,
+    "id_cli": "Carlos miue",
+    "telefono": "543541607960",
+    "fec_res": "2026-06-19",
+    "hora": "11:00",
+    "tipo_aceite": "Cambio de pastillas de freno"
+  }
+]
