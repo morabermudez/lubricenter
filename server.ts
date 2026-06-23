@@ -13,12 +13,23 @@ const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY || process.env.VITE_SUPABASE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
+<<<<<<< HEAD
   console.error("❌ ERROR: Faltan las variables SUPABASE_URL/SUPABASE_KEY en el archivo .env");
 }
 
 const supabase = createClient(
   supabaseUrl || "https://placeholder.supabase.co",
   supabaseKey || "placeholder"
+=======
+  throw new Error(
+    "Faltan las variables SUPABASE_URL/SUPABASE_KEY o VITE_SUPABASE_URL/VITE_SUPABASE_KEY"
+  );
+}
+
+const supabase = createClient(
+  supabaseUrl,
+  supabaseKey
+>>>>>>> adac350 (Merge de la rama remota main)
 );
 
 const normalizeClient = (client: any) => ({
@@ -94,6 +105,7 @@ const normalizeProduct = (product: any) => ({
   price: product.precio,
 });
 
+<<<<<<< HEAD
 // Turnos de ejemplo para que el dashboard del jefe y la agenda muestren datos
 // cuando la base (Supabase) esté vacía o no esté disponible.
 const DEMO_APPOINTMENTS = [
@@ -201,6 +213,8 @@ const DEMO_APPOINTMENTS = [
   },
 ];
 
+=======
+>>>>>>> adac350 (Merge de la rama remota main)
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -251,6 +265,7 @@ async function startServer() {
   app.get("/api/appointments", async (_req, res) => {
     try {
       const { data, error } = await supabase.from("reservas").select("*");
+<<<<<<< HEAD
       if (error) throw error;
       const normalized = (data ?? []).map(normalizeAppointment);
       res.json(normalized.length > 0 ? normalized : DEMO_APPOINTMENTS);
@@ -276,15 +291,61 @@ async function startServer() {
 
   app.delete("/api/appointments/:id", async (req, res) => {
     try {
+=======
+
+      if (error) throw error;
+
+      res.json((data ?? []).map(normalizeAppointment));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        error: "No se pudieron cargar las citas",
+      });
+    }
+  });
+
+  app.post("/api/appointments", async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from("reservas")
+        .insert([appointmentPayload(req.body)])
+        .select();
+
+      if (error) throw error;
+
+      res.status(201).json(normalizeAppointment(data?.[0] ?? req.body));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        error: "No se pudo guardar la reserva",
+      });
+    }
+  });
+
+  app.delete("/api/appointments/:id", async (req, res) => {
+    try {
+>>>>>>> adac350 (Merge de la rama remota main)
       const { error } = await supabase
         .from("reservas")
         .delete()
         .or(`id.eq.${req.params.id},id_reserva.eq.${req.params.id}`);
+<<<<<<< HEAD
       if (error) throw error;
       res.json({ success: true });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "No se pudo eliminar" });
+=======
+
+      if (error) throw error;
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        error: "No se pudo eliminar",
+      });
+>>>>>>> adac350 (Merge de la rama remota main)
     }
   });
 
@@ -295,22 +356,46 @@ async function startServer() {
         .update(req.body)
         .or(`id.eq.${req.params.id},id_reserva.eq.${req.params.id}`)
         .select();
+<<<<<<< HEAD
       if (error) throw error;
       res.json(normalizeAppointment(data?.[0] ?? { ...req.body, id: req.params.id }));
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "No se pudo actualizar" });
+=======
+
+      if (error) throw error;
+
+      res.json(normalizeAppointment(data?.[0] ?? { ...req.body, id: req.params.id }));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        error: "No se pudo actualizar",
+      });
+>>>>>>> adac350 (Merge de la rama remota main)
     }
   });
 
   app.get("/api/inventory", async (_req, res) => {
     try {
       const { data, error } = await supabase.from("aceites").select("*");
+<<<<<<< HEAD
       if (error) throw error;
       res.json((data ?? []).map(normalizeProduct));
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "No se pudo cargar el inventario" });
+=======
+
+      if (error) throw error;
+
+      res.json((data ?? []).map(normalizeProduct));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        error: "No se pudo cargar el inventario",
+      });
+>>>>>>> adac350 (Merge de la rama remota main)
     }
   });
 
@@ -321,6 +406,7 @@ async function startServer() {
         .update(req.body)
         .or(`id.eq.${req.params.id},id_stock.eq.${req.params.id},id_producto.eq.${req.params.id}`)
         .select();
+<<<<<<< HEAD
       if (error) throw error;
       res.json(normalizeProduct(data?.[0] ?? { ...req.body, id: req.params.id }));
     } catch (error) {
@@ -337,11 +423,35 @@ async function startServer() {
       res.sendFile(path.join(distPath, "index.html"));
     });
   } else {
+=======
+
+      if (error) throw error;
+
+      res.json(normalizeProduct(data?.[0] ?? { ...req.body, id: req.params.id }));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        error: "No se pudo actualizar el producto",
+      });
+    }
+  });
+
+  if (process.env.NODE_ENV !== "production") {
+>>>>>>> adac350 (Merge de la rama remota main)
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
+<<<<<<< HEAD
+=======
+  } else {
+    const distPath = path.join(process.cwd(), "dist");
+    app.use(express.static(distPath));
+    app.get("*", (_req, res) => {
+      res.sendFile(path.join(distPath, "index.html"));
+    });
+>>>>>>> adac350 (Merge de la rama remota main)
   }
 
   app.listen(PORT, "0.0.0.0", () => {
@@ -349,6 +459,10 @@ async function startServer() {
   });
 }
 
+<<<<<<< HEAD
 startServer().catch((err) => {
   console.error("❌ Error al iniciar el servidor:", err);
 });
+=======
+startServer();
+>>>>>>> adac350 (Merge de la rama remota main)

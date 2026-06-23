@@ -53,11 +53,22 @@ export default function App() {
 
   const handleAuthNavigate = (view: string, email?: string) => {
     if (email) setUserEmail(email);
+<<<<<<< HEAD
     if (view === 'boss') setUserRole('boss');
     else if (view === 'admin' || view === 'inventory' || view === 'admin-booking') setUserRole('employee');
     else if (view === 'booking' || view === 'home') setUserRole('client');
 
     navigate(view);
+=======
+    if (view === 'admin' || view === 'inventory' || view === 'admin-booking') setUserRole('employee');
+    else if (view === 'booking' || view === 'home') setUserRole('client');
+
+    if (view === 'back') {
+      setCurrentView(previousView);
+    } else {
+      setCurrentView(view);
+    }
+>>>>>>> adac350 (Merge de la rama remota main)
   };
 
   const renderView = () => {
@@ -113,6 +124,7 @@ export default function App() {
           />
         );
 
+<<<<<<< HEAD
       case "boss":
         return <BossDashboard onNavigate={navigate} />;
 
@@ -122,6 +134,38 @@ export default function App() {
       case "register":
         return <Login onNavigate={handleAuthNavigate} initialMode="register" />;
 
+=======
+      case "login":
+<<<<<<< HEAD
+        return (
+          <Login
+            onNavigate={(view, email) => {
+              if (email) setUserEmail(email);
+
+              if (view === "admin" || view === "inventory") {
+                setUserRole("employee");
+              } else if (view === "booking" || view === "home") {
+                setUserRole("client");
+              }
+
+              if (view === "back") {
+                setCurrentView(previousView);
+              } else {
+                setCurrentView(view);
+              }
+            }}
+          />
+        );
+
+=======
+        return <Login onNavigate={handleAuthNavigate} />;
+      case "register":
+        return <Login 
+          initialMode="register"
+          onNavigate={handleAuthNavigate} 
+        />;
+>>>>>>> origin/main
+>>>>>>> adac350 (Merge de la rama remota main)
       default:
         return <Welcome onNavigate={navigate} />;
     }
@@ -141,6 +185,21 @@ export default function App() {
           {renderView()}
         </motion.div>
       </AnimatePresence>
+<<<<<<< HEAD
+=======
+
+<<<<<<< HEAD
+      <GlobalNavigation
+        currentView={currentView}
+        onNavigate={setCurrentView}
+=======
+      <GlobalNavigation 
+        currentView={currentView} 
+        onNavigate={navigate} 
+>>>>>>> origin/main
+        userRole={userRole}
+      />
+>>>>>>> adac350 (Merge de la rama remota main)
     </div>
   );
 }
