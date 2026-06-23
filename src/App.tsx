@@ -55,6 +55,18 @@ export default function App() {
     setCurrentView(view);
   };
 
+  const handleAuthNavigate = (view: string, email?: string) => {
+    if (email) setUserEmail(email);
+    if (view === 'admin' || view === 'inventory' || view === 'admin-booking') setUserRole('employee');
+    else if (view === 'booking' || view === 'home') setUserRole('client');
+
+    if (view === 'back') {
+      setCurrentView(previousView);
+    } else {
+      setCurrentView(view);
+    }
+  };
+
   const renderView = () => {
     switch (currentView) {
       case "landing":
@@ -93,18 +105,12 @@ export default function App() {
           backView="admin"
         />;
       case "login":
-        return <Login onNavigate={(view, email) => {
-          if (email) setUserEmail(email);
-          // Si el usuario entra a 'admin', lo tratamos como employee por defecto para este demo
-          if (view === 'admin' || view === 'inventory') setUserRole('employee');
-          else if (view === 'booking' || view === 'home') setUserRole('client');
-          
-          if (view === 'back') {
-            setCurrentView(previousView);
-          } else {
-            setCurrentView(view);
-          }
-        }} />;
+        return <Login onNavigate={handleAuthNavigate} />;
+      case "register":
+        return <Login 
+          initialMode="register"
+          onNavigate={handleAuthNavigate} 
+        />;
       default:
         return <Welcome onNavigate={navigate} />;
     }
@@ -127,7 +133,7 @@ export default function App() {
 
       <GlobalNavigation 
         currentView={currentView} 
-        onNavigate={setCurrentView} 
+        onNavigate={navigate} 
         userRole={userRole}
       />
     </div>

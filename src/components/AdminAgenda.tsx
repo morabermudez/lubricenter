@@ -6,6 +6,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { fetchAppointments, deleteAppointment, updateAppointment } from "../services/bookingService";
+import Notificaciones from "./Notificaciones";
 
 interface AdminAgendaProps {
   onNavigate: (view: string) => void;
@@ -18,6 +19,8 @@ export default function AdminAgenda({ onNavigate }: AdminAgendaProps) {
   const [viewMode, setViewMode] = useState<'daily' | 'all'>('daily');
   const [searchName, setSearchName] = useState("");
   const [searchPlate, setSearchPlate] = useState("");
+  const [topSearch, setTopSearch] = useState("");
+  const [showNotifications, setShowNotifications] = useState(false);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingAppointment, setEditingAppointment] = useState<any>(null);
@@ -91,16 +94,28 @@ export default function AdminAgenda({ onNavigate }: AdminAgendaProps) {
   const filteredAppointments = appointments.filter(apt => {
     const matchesName = apt.name.toLowerCase().includes(searchName.toLowerCase());
     const matchesPlate = apt.plate.toLowerCase().includes(searchPlate.toLowerCase());
-    return matchesName && matchesPlate;
+    const topSearchText = topSearch.toLowerCase();
+    const matchesTopSearch = !topSearchText || [
+      apt.name,
+      apt.plate,
+      apt.service,
+      apt.status,
+      apt.date,
+      apt.time,
+    ].some(value => String(value || "").toLowerCase().includes(topSearchText));
+    return matchesName && matchesPlate && matchesTopSearch;
   });
 
-  const appointmentsToDisplay = viewMode === 'daily' 
+  const appointmentsToDisplay = viewMode === 'daily' && !topSearch
     ? appointments.filter(apt => {
         const monthStr = months[currentMonthIndex].substring(0, 3);
         const aptDate = apt.date || "";
         return aptDate === `${selectedDay} ${monthStr}`;
       })
     : filteredAppointments;
+
+  const pendingAppointments = appointments.filter(a => a.status === 'Pendiente');
+  const confirmedAppointments = appointments.filter(a => a.status === 'Confirmado');
 
   return (
     <div className="flex min-h-screen bg-[#f9f9f9]">
@@ -159,14 +174,62 @@ export default function AdminAgenda({ onNavigate }: AdminAgendaProps) {
           <div className="hidden md:flex flex-1 max-w-xl">
             <div className="relative w-full">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-sm">search</span>
-              <input className="w-full bg-[#f3f3f3] border-none rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none" placeholder="Buscar..." />
+              <input 
+                value={topSearch}
+                onChange={(e) => {
+                  setTopSearch(e.target.value);
+                  if (e.target.value.trim()) setViewMode('all');
+                }}
+                className="w-full bg-[#f3f3f3] border-none rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none" 
+                placeholder="Buscar cita, patente o servicio..." 
+              />
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <button className="p-2 rounded-full hover:bg-stone-100 transition-colors relative">
+          <div className="flex items-center gap-4 relative">
+            <button 
+              onClick={() => setShowNotifications(prev => !prev)}
+              className="p-2 rounded-full hover:bg-stone-100 transition-colors relative"
+              aria-label="Ver notificaciones"
+            >
               <span className="material-symbols-outlined text-[#584141]">notifications</span>
-              <span className="absolute top-2 right-2 w-2 h-2 bg-rose-600 rounded-full"></span>
+              {pendingAppointments.length > 0 && (
+                <span className="absolute top-2 right-2 w-2 h-2 bg-rose-600 rounded-full"></span>
+              )}
             </button>
+            {showNotifications && (
+              <div className="absolute right-10 top-12 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-2xl border border-stone-100 p-4 z-[80]">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-black text-sm text-[#1a1c1c]">Notificaciones</h3>
+                  <button onClick={() => setShowNotifications(false)} className="text-stone-400 hover:text-rose-900">
+                    <span className="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <button 
+                    onClick={() => {
+                      setViewMode('all');
+                      setTopSearch('Pendiente');
+                      setShowNotifications(false);
+                    }}
+                    className="w-full text-left p-3 rounded-lg bg-amber-50 hover:bg-amber-100 transition-colors"
+                  >
+                    <p className="font-black text-sm text-amber-800">{pendingAppointments.length} turnos pendientes</p>
+                    <p className="text-xs text-amber-700">Tocá para revisarlos y confirmarlos.</p>
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setViewMode('all');
+                      setTopSearch('Confirmado');
+                      setShowNotifications(false);
+                    }}
+                    className="w-full text-left p-3 rounded-lg bg-green-50 hover:bg-green-100 transition-colors"
+                  >
+                    <p className="font-black text-sm text-green-800">{confirmedAppointments.length} turnos confirmados</p>
+                    <p className="text-xs text-green-700">Tocá para ver la agenda confirmada.</p>
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="w-8 h-8 rounded-full velocity-gradient text-white flex items-center justify-center font-bold text-xs shadow-lg">JD</div>
           </div>
         </header>
@@ -185,6 +248,7 @@ export default function AdminAgenda({ onNavigate }: AdminAgendaProps) {
                 <span className="material-symbols-outlined">add_circle</span>
                 Agendar Turno
               </button>
+              <Notificaciones />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
@@ -223,8 +287,9 @@ export default function AdminAgenda({ onNavigate }: AdminAgendaProps) {
                     </button>
                   </div>
                   <div className="flex gap-2">
-                    <button className="p-2 bg-[#e8e8e8] rounded-lg"><span className="material-symbols-outlined text-sm">grid_view</span></button>
-                    <button className="p-2 bg-rose-900 text-white rounded-lg"><span className="material-symbols-outlined text-sm">format_list_bulleted</span></button>
+                    <button className="p-2 bg-rose-900 text-white rounded-lg" aria-label="Vista de lista">
+                      <span className="material-symbols-outlined text-sm">format_list_bulleted</span>
+                    </button>
                   </div>
                 </div>
 

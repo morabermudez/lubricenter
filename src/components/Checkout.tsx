@@ -13,8 +13,44 @@ interface CheckoutProps {
 }
 
 export default function Checkout({ onNavigate, bookingData }: CheckoutProps) {
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "transfer">("card");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   if (!bookingData) return null;
+
+  // Función para solicitar la orden de pago y redireccionar de forma directa
+  const handlePayment = async () => {
+    setIsLoading(true);
+    try {
+      const priceToSend = bookingData && bookingData.depositPrice ? bookingData.depositPrice : 1500;
+      const titleToSend = bookingData && bookingData.oilType ? bookingData.oilType.split(' (')[0] : "Seña de Servicio";
+
+      const response = await fetch("/api/create_preference", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: titleToSend, 
+          quantity: 1,
+          price: priceToSend, 
+        }),
+      });
+
+      const data = await response.json();
+
+      // Si el servidor nos devuelve el init_point, mandamos al usuario directo a Mercado Pago
+      if (data.init_point) {
+        window.location.href = data.init_point; 
+      } else {
+        alert("No se pudo generar la orden de pago. Verifica el servidor.");
+      }
+    } catch (error) {
+      console.error("Error al conectar con el servidor:", error);
+      alert("Hubo un error al procesar la solicitud de pago.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#f9f9f9] pb-24 font-manrope">
@@ -82,100 +118,19 @@ export default function Checkout({ onNavigate, bookingData }: CheckoutProps) {
             </div>
           </div>
 
-          <div className="lg:col-span-7">
-            <div className="bg-white shadow-xl rounded-xl p-8 lg:p-10 border border-stone-100">
-              <div className="mb-8">
-                <h3 className="text-2xl font-bold mb-2">Detalles de Pago</h3>
-                <p className="text-[#584141] text-sm">Selecciona tu método de pago e ingresa los detalles abajo.</p>
-              </div>
+          <div className="lg:col-span-7 flex flex-col justify-center">
+            <div className="bg-white shadow-xl rounded-xl p-8 lg:p-10 border border-stone-100 flex flex-col items-center justify-center min-h-[300px] w-full">
+              
+              {/* Dejamos el botón azul nativo. Al hacer clic, procesa y redirecciona sin errores de interfaz */}
+              <button 
+                onClick={handlePayment}
+                disabled={isLoading}
+                className="bg-[#009ee3] hover:bg-[#008cc9] text-white w-full max-w-md py-6 rounded-xl font-black text-2xl tracking-tight active:scale-95 transition-all shadow-xl flex items-center justify-center gap-3 shadow-sky-500/35 disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: '"FILL" 1' }}>payments</span>
+                {isLoading ? "Procesando transferencia..." : "Confirmar y Pagar Seña"}
+              </button>
 
-              <div className="flex gap-4 p-1 bg-[#f3f3f3] rounded-xl mb-8">
-                <button 
-                  onClick={() => setPaymentMethod("card")}
-                  className={`flex-1 py-3 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${
-                    paymentMethod === "card" 
-                      ? "bg-white shadow-sm text-rose-900" 
-                      : "text-[#584141] hover:bg-stone-200"
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-sm">credit_card</span>
-                  Crédito / Débito
-                </button>
-                <button 
-                  onClick={() => setPaymentMethod("transfer")}
-                  className={`flex-1 py-3 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all ${
-                    paymentMethod === "transfer" 
-                      ? "bg-white shadow-sm text-rose-900" 
-                      : "text-[#584141] hover:bg-stone-200"
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-sm">account_balance</span>
-                  Transferencia
-                </button>
-              </div>
-
-              {paymentMethod === "card" ? (
-                <div className="space-y-5">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-[#584141] ml-1">Nombre del Titular</label>
-                    <input className="w-full bg-[#e8e8e8] border-none rounded-lg px-4 py-4 focus:ring-2 focus:ring-rose-900/20 focus:bg-white transition-all outline-none" placeholder="Juan Pérez" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-[#584141] ml-1">Número de Tarjeta</label>
-                    <div className="relative">
-                      <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#584141]">credit_card</span>
-                      <input className="w-full bg-[#e8e8e8] border-none rounded-lg pl-12 pr-4 py-4 focus:ring-2 focus:ring-rose-900/20 focus:bg-white transition-all outline-none" placeholder="0000 0000 0000 0000" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-[#584141] ml-1">Fecha de Vencimiento</label>
-                      <input className="w-full bg-[#e8e8e8] border-none rounded-lg px-4 py-4 text-center focus:ring-2 focus:ring-rose-900/20 focus:bg-white transition-all outline-none" placeholder="MM/AA" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-[#584141] ml-1">CVV</label>
-                      <input className="w-full bg-[#e8e8e8] border-none rounded-lg px-4 py-4 text-center focus:ring-2 focus:ring-rose-900/20 focus:bg-white transition-all outline-none" placeholder="•••" />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-stone-50 border border-stone-200 rounded-xl p-6 space-y-4">
-                  <div className="flex items-center gap-3 text-rose-900 mb-2">
-                    <span className="material-symbols-outlined">info</span>
-                    <p className="text-xs font-bold uppercase tracking-wider">Datos para la transferencia</p>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="bg-white p-3 rounded-lg border border-stone-100">
-                      <p className="text-[10px] text-stone-500 font-bold uppercase">Alias</p>
-                      <p className="font-bold text-lg select-all">LUBRICENTER.PRO.OK</p>
-                    </div>
-                    <div className="bg-white p-3 rounded-lg border border-stone-100">
-                      <p className="text-[10px] text-stone-500 font-bold uppercase">CBU</p>
-                      <p className="font-mono text-sm select-all">0000000000000000000000</p>
-                    </div>
-                    <div className="bg-white p-3 rounded-lg border border-stone-100">
-                      <p className="text-[10px] text-stone-500 font-bold uppercase">Banco</p>
-                      <p className="font-bold">Banco Galicia</p>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-stone-500 italic mt-4">
-                    * Una vez realizada la transferencia, suba el comprobante o presione confirmar para que validemos el pago manualmente.
-                  </p>
-                </div>
-              )}
-
-              <div className="pt-8">
-                <button 
-                  onClick={() => onNavigate('confirmation')}
-                  className="velocity-gradient w-full py-5 rounded-lg text-white font-bold text-lg tracking-tight hover:opacity-90 active:scale-95 transition-all shadow-lg flex items-center justify-center gap-3"
-                >
-                  <span className="material-symbols-outlined" style={{ fontVariationSettings: '"FILL" 1' }}>{paymentMethod === "card" ? "lock" : "send"}</span>
-                  {paymentMethod === "card" ? "Pagar" : "Confirmar Transferencia"} ${bookingData.depositPrice.toLocaleString('es-AR')}
-                </button>
-                <p className="text-center text-[10px] text-[#584141] mt-4 uppercase tracking-[0.1em]">
-                  Transacción Segura Operada por LUBRICENTER SecurePay
-                </p>
-              </div>
             </div>
           </div>
         </div>
