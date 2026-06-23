@@ -1,19 +1,21 @@
 import express from "express";
-import { createServer as createViteServer } from "vite";
+import { MercadoPagoConfig, Preference } from "mercadopago";
 import path from "path";
 import { fileURLToPath } from "url";
+import { createClient } from "@supabase/supabase-js";
+import { createServer as createViteServer } from "vite";
 import "dotenv/config";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-import { createClient } from "@supabase/supabase-js";
-
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY || process.env.VITE_SUPABASE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error("Faltan las variables SUPABASE_URL/SUPABASE_KEY o VITE_SUPABASE_URL/VITE_SUPABASE_KEY");
+  throw new Error(
+    "Faltan las variables SUPABASE_URL/SUPABASE_KEY o VITE_SUPABASE_URL/VITE_SUPABASE_KEY"
+  );
 }
 
 const supabase = createClient(
@@ -100,82 +102,120 @@ async function startServer() {
 
   app.use(express.json());
 
-  // API Routes
-  app.get("/api/appointments", async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from("reservas")
-      .select("*");
+  const client = new MercadoPagoConfig({
+    accessToken: "TEST-748337118059184-061714-78012f824f2e29f7927fc9dee43c626e-2520047460",
+  });
 
-    if (error) throw error;
+  app.post("/api/create_preference", async (req, res) => {
+    try {
+      const preference = new Preference(client);
+      let rawPrice = req.body.price ? String(req.body.price) : "1500";
+      let cleanPrice = rawPrice.replace(/\$/g, "").replace(/\./g, "").replace(/,/g, ".").trim();
+      const parsedPrice = Math.round(Number(cleanPrice));
 
-    res.json((data ?? []).map(normalizeAppointment));
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      error: "No se pudieron cargar las citas",
-    });
-  }
-});
+      const result = await preference.create({
+        body: {
+          items: [
+            {
+              id: "sena-lubricenter",
+              title: req.body.title || "Sena de Servicio - Lubricenter",
+              quantity: 1,
+              unit_price: parsedPrice,
+              currency_id: "ARS",
+            },
+          ],
+          back_urls: {
+            success: `http://localhost:${PORT}/`,
+            failure: `http://localhost:${PORT}/`,
+            pending: `http://localhost:${PORT}/`,
+          },
+          auto_return: "approved",
+        },
+      });
+
+      res.json({
+        id: result.id,
+        init_point: result.init_point,
+      });
+    } catch (error) {
+      console.error("Error al generar la preferencia en Mercado Pago:", error);
+      res.status(500).json({ error: "No se pudo crear la preferencia de pago" });
+    }
+  });
+
+  app.get("/api/appointments", async (_req, res) => {
+    try {
+      const { data, error } = await supabase.from("reservas").select("*");
+
+      if (error) throw error;
+
+      res.json((data ?? []).map(normalizeAppointment));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        error: "No se pudieron cargar las citas",
+      });
+    }
+  });
 
   app.post("/api/appointments", async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from("reservas")
-      .insert([appointmentPayload(req.body)])
-      .select();
-
-    if (error) throw error;
-
-    res.status(201).json(normalizeAppointment(data?.[0] ?? req.body));
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      error: "No se pudo guardar la reserva"
-    });
-  }
-});
-
-  app.delete("/api/appointments/:id", async (req, res) => {
-  try {
-    const { error } = await supabase
-      .from("reservas")
-      .delete()
-      .or(`id.eq.${req.params.id},id_reserva.eq.${req.params.id}`);
-
-    if (error) throw error;
-
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({
-      error: "No se pudo eliminar"
-    });
-  }
-});
-
-  app.patch("/api/appointments/:id", async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from("reservas")
-      .update(req.body)
-      .or(`id.eq.${req.params.id},id_reserva.eq.${req.params.id}`)
-      .select();
-
-    if (error) throw error;
-
-    res.json(normalizeAppointment(data?.[0] ?? { ...req.body, id: req.params.id }));
-  } catch (error) {
-    res.status(500).json({
-      error: "No se pudo actualizar"
-    });
-  }
-});
-
-  app.get("/api/inventory", async (req, res) => {
     try {
       const { data, error } = await supabase
-        .from("aceites")
-        .select("*");
+        .from("reservas")
+        .insert([appointmentPayload(req.body)])
+        .select();
+
+      if (error) throw error;
+
+      res.status(201).json(normalizeAppointment(data?.[0] ?? req.body));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        error: "No se pudo guardar la reserva",
+      });
+    }
+  });
+
+  app.delete("/api/appointments/:id", async (req, res) => {
+    try {
+      const { error } = await supabase
+        .from("reservas")
+        .delete()
+        .or(`id.eq.${req.params.id},id_reserva.eq.${req.params.id}`);
+
+      if (error) throw error;
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        error: "No se pudo eliminar",
+      });
+    }
+  });
+
+  app.patch("/api/appointments/:id", async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from("reservas")
+        .update(req.body)
+        .or(`id.eq.${req.params.id},id_reserva.eq.${req.params.id}`)
+        .select();
+
+      if (error) throw error;
+
+      res.json(normalizeAppointment(data?.[0] ?? { ...req.body, id: req.params.id }));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        error: "No se pudo actualizar",
+      });
+    }
+  });
+
+  app.get("/api/inventory", async (_req, res) => {
+    try {
+      const { data, error } = await supabase.from("aceites").select("*");
 
       if (error) throw error;
 
@@ -193,7 +233,7 @@ async function startServer() {
       const { data, error } = await supabase
         .from("aceites")
         .update(req.body)
-        .or(`id.eq.${req.params.id},id_producto.eq.${req.params.id}`)
+        .or(`id.eq.${req.params.id},id_stock.eq.${req.params.id},id_producto.eq.${req.params.id}`)
         .select();
 
       if (error) throw error;
@@ -207,7 +247,6 @@ async function startServer() {
     }
   });
 
-  // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -217,7 +256,7 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
-    app.get("*", (req, res) => {
+    app.get("*", (_req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
   }

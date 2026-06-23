@@ -50,6 +50,18 @@ export default function App() {
     setCurrentView(view);
   };
 
+  const handleAuthNavigate = (view: string, email?: string) => {
+    if (email) setUserEmail(email);
+    if (view === 'admin' || view === 'inventory' || view === 'admin-booking') setUserRole('employee');
+    else if (view === 'booking' || view === 'home') setUserRole('client');
+
+    if (view === 'back') {
+      setCurrentView(previousView);
+    } else {
+      setCurrentView(view);
+    }
+  };
+
   const renderView = () => {
     switch (currentView) {
       case "landing":
@@ -104,6 +116,7 @@ export default function App() {
         );
 
       case "login":
+<<<<<<< HEAD
         return (
           <Login
             onNavigate={(view, email) => {
@@ -124,6 +137,14 @@ export default function App() {
           />
         );
 
+=======
+        return <Login onNavigate={handleAuthNavigate} />;
+      case "register":
+        return <Login 
+          initialMode="register"
+          onNavigate={handleAuthNavigate} 
+        />;
+>>>>>>> origin/main
       default:
         return <Welcome onNavigate={navigate} />;
     }
@@ -144,9 +165,15 @@ export default function App() {
         </motion.div>
       </AnimatePresence>
 
+<<<<<<< HEAD
       <GlobalNavigation
         currentView={currentView}
         onNavigate={setCurrentView}
+=======
+      <GlobalNavigation 
+        currentView={currentView} 
+        onNavigate={navigate} 
+>>>>>>> origin/main
         userRole={userRole}
       />
     </div>
