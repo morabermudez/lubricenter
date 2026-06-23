@@ -21,19 +21,58 @@ const supabase = createClient(
   supabaseKey
 );
 
+const normalizeClient = (client: any) => ({
+  ...client,
+  id: client.id_cliente,
+  name: client.nombre_cliente,
+  lastName: client.apellido_cliente,
+  phone: client.telefono,
+});
+
+const normalizeVehicle = (vehicle: any) => ({
+  ...vehicle,
+  plate: vehicle.patente,
+  clientId: vehicle.id_cli,
+  brand: vehicle.marca,
+  model: vehicle.modelo,
+});
+
 const normalizeAppointment = (appointment: any) => ({
   ...appointment,
-  id: appointment.id ?? appointment.id_reserva,
-  name: appointment.name ?? appointment.nombre ?? "",
-  email: appointment.email ?? appointment.correo ?? "",
-  phone: appointment.phone ?? appointment.telefono ?? "",
-  plate: appointment.plate ?? appointment.patente ?? "",
-  service: appointment.service ?? appointment.oilType ?? appointment.oil_type ?? appointment.tipo_aceite ?? "",
-  oilType: appointment.oilType ?? appointment.oil_type ?? appointment.tipo_aceite ?? appointment.service ?? "",
-  date: appointment.date ?? appointment.fecha ?? "",
-  time: appointment.time ?? appointment.hora ?? "",
-  status: appointment.status ?? appointment.estado ?? "Pendiente",
-  color: appointment.color ?? "rose-900",
+  id: appointment.id_reserva,
+  phone: appointment.telefono,
+  oilType: appointment.tipo_aceite,
+  date: appointment.fec_res,
+  time: appointment.hora,
+  clientId: appointment.id_cli,
+  paymentId: appointment.id_pago,
+  stockId: appointment.id_stock,
+  status: "Pendiente",
+  color: "rose-900",
+});
+
+const normalizePayment = (payment: any) => ({
+  ...payment,
+  id: payment.id_pago,
+  method: payment.metodo_pago,
+  total: payment.monto_total,
+  reservationId: payment.id_reserva,
+});
+
+const normalizePaymentDetail = (detail: any) => ({
+  ...detail,
+  id: detail.id_detalle,
+  paymentId: detail.id_pago,
+  card: detail.tarjeta,
+  holder: detail.titular,
+});
+
+const normalizeEmployee = (employee: any) => ({
+  ...employee,
+  id: employee.id_empleado,
+  name: employee.nombre_empleado,
+  lastName: employee.apellido_empleado,
+  phone: employee.telefono,
 });
 
 const appointmentPayload = (appointment: any) => ({
@@ -44,15 +83,15 @@ const appointmentPayload = (appointment: any) => ({
 
 const normalizeProduct = (product: any) => ({
   ...product,
-  id: product.id ?? product.id_producto,
-  name: product.name ?? product.nombre ?? "",
-  sku: product.sku ?? product.codigo ?? "",
-  category: product.category ?? product.categoria ?? "Todos",
-  stock: product.stock ?? product.cantidad ?? 0,
-  critical: product.critical ?? product.critico ?? (product.stock ?? product.cantidad ?? 0) < 10,
-  icon: product.icon ?? product.icono ?? "inventory_2",
-  description: product.description ?? product.descripcion ?? "",
-  price: product.price ?? product.precio ?? 0,
+  id: product.id_stock,
+  name: product.tipo_aceite,
+  sku: `ACE-${product.id_stock}`,
+  category: "Aceites",
+  stock: product.cant_stock,
+  critical: product.cant_stock < 10,
+  icon: "inventory_2",
+  description: product.tipo_aceite,
+  price: product.precio,
 });
 
 async function startServer() {
@@ -135,7 +174,7 @@ async function startServer() {
   app.get("/api/inventory", async (req, res) => {
     try {
       const { data, error } = await supabase
-        .from("inventario")
+        .from("aceites")
         .select("*");
 
       if (error) throw error;
@@ -152,7 +191,7 @@ async function startServer() {
   app.patch("/api/inventory/:id", async (req, res) => {
     try {
       const { data, error } = await supabase
-        .from("inventario")
+        .from("aceites")
         .update(req.body)
         .or(`id.eq.${req.params.id},id_producto.eq.${req.params.id}`)
         .select();
