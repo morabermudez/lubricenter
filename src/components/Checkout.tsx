@@ -6,6 +6,13 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { BookingData } from "../App";
+// Importamos el SDK oficial de Mercado Pago
+import { initMercadoPago } from '@mercadopago/sdk-react';
+
+// Inicializamos el SDK asegurando que la clave pública esté perfecta
+initMercadoPago('TEST-683fdcce-83ef-408d-98fd-c7fe76884ccd', {
+  locale: 'es-AR'
+});
 
 interface CheckoutProps {
   onNavigate: (view: string) => void;

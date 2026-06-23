@@ -3,6 +3,8 @@ import { createServer as createViteServer } from "vite";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+// Importamos las librerías oficiales de Mercado Pago
+import { MercadoPagoConfig, Preference } from 'mercadopago';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,13 +19,17 @@ async function startServer() {
   // =========================================================================
   // 1. CONFIGURACIÓN DE MERCADO PAGO (CON TU TOKEN COMPLETO DE PRUEBA)
   // =========================================================================
-  const MERCADO_PAGO_ACCESS_TOKEN = "TEST-748337118059184-061714-78012f824f2e29f7927fc9dee43c626e-2520047460";
+  const client = new MercadoPagoConfig({ 
+    accessToken: 'TEST-748337118059184-061714-78012f824f2e29f7927fc9dee43c626e-2520047460' 
+  });
 
   // =========================================================================
   // 2. RUTA PARA RECIBIR LA SOLICITUD DEL FRONTEND (MODIFICADA CON INIT_POINT)
   // =========================================================================
   app.post("/api/create_preference", async (req, res) => {
     try {
+      const preference = new Preference(client);
+
       // Limpiamos el precio: quitamos "$", espacios y puntos de miles para evitar romper la API
       let rawPrice = req.body.price ? String(req.body.price) : "1500";
       let cleanPrice = rawPrice.replace(/\$/g, "").replace(/\./g, "").replace(/,/g, ".").trim();
@@ -35,13 +41,8 @@ async function startServer() {
         unit_price: parsedPrice
       });
 
-      const response = await fetch("https://api.mercadopago.com/checkout/preferences", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${MERCADO_PAGO_ACCESS_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      const result = await preference.create({
+        body: {
           items: [
             {
               id: "sena-lubricenter",
@@ -57,15 +58,8 @@ async function startServer() {
             pending: "http://localhost:3000/"
           },
           autoReturn: "approved",
-        }),
+        }
       });
-
-      if (!response.ok) {
-        const errorBody = await response.text();
-        throw new Error(`Mercado Pago respondió ${response.status}: ${errorBody}`);
-      }
-
-      const result = await response.json();
 
       console.log("-> Preferencia creada con ID exitoso:", result.id);
       

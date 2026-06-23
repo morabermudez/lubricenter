@@ -45,7 +45,11 @@
     "depositPrice": 22750,
     "date": "19 Jun",
     "status": "Confirmado",
-    "color": "emerald-500"
+    
+    "color": "emerald-500",
+    "totalPrice": 15000,
+    "email": "seb@vettel.de",
+    "phone": "+49 11 3333-3333"
   },
   {
     "id": "1781724857829",
@@ -77,22 +81,7 @@
     "depositPrice": 22750,
     "date": "17 Jun",
     "status": "Pendiente",
-    "color": "amber-400"
-  },
-  {
-    "id": "1782224072655",
-    "name": "Mateo guevara",
-    "email": "mateoguevara@iico.edu.ar",
-    "phone": "3541 329639",
-    "plate": "100jic",
-    "oilType": "Semi-sintético (10W-40)",
-    "day": 26,
-    "month": "Julio",
-    "time": "02:30 PM",
-    "totalPrice": 37500,
-    "depositPrice": 18750,
-    "date": "26 Jul",
-    "status": "Pendiente",
+
     "color": "amber-400"
   }
 ]

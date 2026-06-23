@@ -6,7 +6,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { fetchAppointments, deleteAppointment, updateAppointment } from "../services/bookingService";
-import Notificaciones from "./Notificaciones";
+import Notificaciones from './Notificaciones';
+
+
 
 interface AdminAgendaProps {
   onNavigate: (view: string) => void;
