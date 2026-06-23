@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { fetchInventory, updateInventoryProduct } from "../services/inventoryService";
 
 interface InventoryProps {
   onNavigate: (view: string) => void;
@@ -16,6 +17,7 @@ export default function Inventory({ onNavigate }: InventoryProps) {
   const [showOnlyCritical, setShowOnlyCritical] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [products, setProducts] = useState([
     { id: 1, name: "Royal Purple High Mileage 5W-30", sku: "LUB-RP-5W30-HM", category: "Aceite de Motor", stock: 4, critical: true, icon: "oil_barrel", description: "Aceite sintético de alto rendimiento para motores con más de 120.000km.", price: 32000 },
@@ -24,10 +26,33 @@ export default function Inventory({ onNavigate }: InventoryProps) {
     { id: 4, name: "NGK Iridium Spark Plug Set", sku: "SP-NGK-IRID", category: "Encendido", stock: 2, critical: true, icon: "settings_input_component", description: "Bujías de iridio para encendido eficiente y ahorro de combustible.", price: 15600 },
   ]);
 
-  const handleUpdateProduct = (updatedProduct: any) => {
-    setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
-    setSelectedProduct(null);
-    setIsEditing(false);
+  useEffect(() => {
+    const loadInventory = async () => {
+      try {
+        const data = await fetchInventory();
+        if (data.length > 0) {
+          setProducts(data);
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadInventory();
+  }, []);
+
+  const handleUpdateProduct = async (updatedProduct: any) => {
+    try {
+      const savedProduct = await updateInventoryProduct(updatedProduct.id, updatedProduct);
+      setProducts(prev => prev.map(p => p.id === savedProduct.id ? savedProduct : p));
+      setSelectedProduct(null);
+      setIsEditing(false);
+    } catch (error) {
+      alert("Error al actualizar el producto");
+      console.error(error);
+    }
   };
 
   const filteredProducts = products.filter(p => {
@@ -171,7 +196,12 @@ export default function Inventory({ onNavigate }: InventoryProps) {
             <div className="col-span-2 text-right">Acciones</div>
           </div>
 
-          {filteredProducts.map((p, i) => (
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center p-20 bg-white rounded-xl border border-stone-100 border-dashed">
+              <div className="w-12 h-12 border-4 border-rose-900/20 border-t-rose-900 rounded-full animate-spin mb-4"></div>
+              <p className="text-stone-500 font-medium">Cargando inventario...</p>
+            </div>
+          ) : filteredProducts.map((p, i) => (
             <motion.div 
               key={p.sku}
               initial={{ opacity: 0, x: -10 }}
