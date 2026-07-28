@@ -98,7 +98,7 @@ export default function Welcome({ onNavigate }: WelcomeProps) {
               Iniciar Sesión
             </button>
             <button 
-              onClick={() => onNavigate('login')}
+              onClick={() => onNavigate('register')}
               className="bg-white text-rose-900 border-2 border-rose-900/20 px-12 py-5 rounded-xl font-bold text-xl shadow-lg hover:bg-rose-50 active:scale-95 transition-all w-full max-w-md flex items-center justify-center gap-3"
             >
               <span className="material-symbols-outlined">person_add</span>

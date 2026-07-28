@@ -27,6 +27,8 @@ export default function Booking({
   const [selectedTime, setSelectedTime] = useState("");
   const [currentMonthIndex, setCurrentMonthIndex] = useState(today.getMonth());
   const [selectedOil, setSelectedOil] = useState("");
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [adminTurnConfirmed, setAdminTurnConfirmed] = useState(false);
 
   // Form states
   const [name, setName] = useState("");
@@ -60,6 +62,39 @@ export default function Booking({
   const totalBudget = oilPrice + filterPrice + laborPrice;
   const depositPrice = totalBudget * 0.5;
 
+  if (adminTurnConfirmed) {
+    return (
+      <div className="min-h-screen bg-[#f9f9f9] flex items-center justify-center px-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md bg-white rounded-2xl border border-stone-100 shadow-xl p-8 text-center"
+        >
+          <div className="w-16 h-16 rounded-full bg-green-50 text-green-700 flex items-center justify-center mx-auto mb-6">
+            <span className="material-symbols-outlined text-4xl">check_circle</span>
+          </div>
+          <h2 className="text-3xl font-black tracking-tight text-[#1a1c1c] mb-2">Turno confirmado</h2>
+          <p className="text-[#584141] mb-8">El turno de {name || "cliente"} quedó cargado en la agenda del taller.</p>
+          <div className="space-y-3">
+            <button 
+              onClick={() => onNavigate('admin')}
+              className="w-full velocity-gradient text-white py-4 rounded-xl font-black flex items-center justify-center gap-2 shadow-lg shadow-rose-900/20"
+            >
+              <span className="material-symbols-outlined">home</span>
+              Volver al inicio
+            </button>
+            <button 
+              onClick={() => setAdminTurnConfirmed(false)}
+              className="w-full bg-[#f3f3f3] text-[#1a1c1c] py-4 rounded-xl font-bold hover:bg-stone-200 transition-colors"
+            >
+              Cargar otro turno
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#f9f9f9]">
       <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm">
@@ -78,10 +113,25 @@ export default function Booking({
               Lubricenter
             </h1>
           </div>
-          <div className="flex items-center gap-4">
-            <button className="p-2 rounded-full hover:bg-stone-100 transition-colors">
+          <div className="flex items-center gap-4 relative">
+            <button 
+              onClick={() => setShowNotifications(prev => !prev)}
+              className="p-2 rounded-full hover:bg-stone-100 transition-colors"
+              aria-label="Ver notificaciones"
+            >
               <span className="material-symbols-outlined text-stone-500">notifications</span>
             </button>
+            {showNotifications && (
+              <div className="absolute right-12 top-12 w-72 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-2xl border border-stone-100 p-4 z-[80]">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-black text-sm text-[#1a1c1c]">Notificaciones</h3>
+                  <button onClick={() => setShowNotifications(false)} className="text-stone-400 hover:text-rose-900">
+                    <span className="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
+                <p className="text-sm text-[#584141]">Completá los datos del turno y elegí un horario disponible para confirmar la reserva.</p>
+              </div>
+            )}
             <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-stone-200">
               <img src="https://picsum.photos/seed/manager/100/100" alt="Profile" className="w-full h-full object-cover" />
             </div>
@@ -318,7 +368,11 @@ export default function Booking({
                       totalPrice: totalBudget,
                       depositPrice: depositPrice
                     });
-                    onNavigate(nextView);
+                    if (nextView === 'admin') {
+                      setAdminTurnConfirmed(true);
+                    } else {
+                      onNavigate(nextView);
+                    }
                   }}
                   className={`w-full font-bold py-5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-3 ${
                     (!name || !phone || !plate || !selectedOil || !selectedTime)
