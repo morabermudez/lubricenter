@@ -16,6 +16,7 @@ import Inventory from "./components/Inventory";
 import Checkout from "./components/Checkout";
 import Confirmation from "./components/Confirmation";
 import AdminAgenda from "./components/AdminAgenda";
+import BossDashboard from "./components/BossDashboard";
 import Login from "./components/Login";
 import GlobalNavigation from "./components/GlobalNavigation";
 import { motion, AnimatePresence } from "motion/react";
@@ -37,7 +38,7 @@ export interface BookingData {
 export default function App() {
   const [currentView, setCurrentView] = useState("landing");
   const [previousView, setPreviousView] = useState("landing");
-  const [userRole, setUserRole] = useState<"none" | "client" | "employee">("none");
+  const [userRole, setUserRole] = useState<"none" | "client" | "employee" | "boss">("none");
   const [userEmail, setUserEmail] = useState("");
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
 
@@ -57,7 +58,8 @@ export default function App() {
 
   const handleAuthNavigate = (view: string, email?: string) => {
     if (email) setUserEmail(email);
-    if (view === 'admin' || view === 'inventory' || view === 'admin-booking') setUserRole('employee');
+    if (view === 'boss') setUserRole('boss');
+    else if (view === 'admin' || view === 'inventory' || view === 'admin-booking') setUserRole('employee');
     else if (view === 'booking' || view === 'home') setUserRole('client');
 
     if (view === 'back') {
@@ -91,6 +93,8 @@ export default function App() {
           onNavigate={navigate} 
           bookingData={bookingData} 
         />;
+      case "boss":
+        return <BossDashboard onNavigate={navigate} />;
       case "admin":
         return <AdminAgenda onNavigate={navigate} />;
       case "admin-booking":
