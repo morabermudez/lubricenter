@@ -48,7 +48,7 @@ export default function AdminAgenda({ onNavigate }: AdminAgendaProps) {
     
     try {
       await deleteAppointment(id);
-      setAppointments(prev => prev.filter(apt => apt.id !== id));
+      setAppointments(prev => prev.filter(apt => String(apt.id) !== String(id)));
       setEditingAppointment(null);
     } catch (error) {
       alert("Error al eliminar el turno");
@@ -60,7 +60,7 @@ export default function AdminAgenda({ onNavigate }: AdminAgendaProps) {
     try {
       await updateAppointment(id, { status: newStatus });
       setAppointments(prev => prev.map(apt => 
-        apt.id === id ? { ...apt, status: newStatus } : apt
+        String(apt.id) === String(id) ? { ...apt, status: newStatus } : apt
       ));
     } catch (error) {
       alert("Error al actualizar el estado");
@@ -331,7 +331,7 @@ export default function AdminAgenda({ onNavigate }: AdminAgendaProps) {
                   </div>
                 ) : appointmentsToDisplay.length > 0 ? appointmentsToDisplay.map((apt, i) => (
                   <motion.div 
-                    key={apt.id || i} 
+                    key={apt.id || apt.id_reserva || i} 
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1 }}
@@ -367,7 +367,7 @@ export default function AdminAgenda({ onNavigate }: AdminAgendaProps) {
                           <button 
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleStatusChange(apt.id, 'Confirmado');
+                              handleStatusChange(String(apt.id), 'Confirmado');
                             }}
                             className="bg-green-600 text-white px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-lg shadow-green-600/20 hover:scale-105 active:scale-95 transition-all"
                             title="Confirmar Turno"
@@ -521,7 +521,7 @@ export default function AdminAgenda({ onNavigate }: AdminAgendaProps) {
                 {editingAppointment.status === 'Pendiente' && (
                   <button 
                     onClick={() => {
-                       handleStatusChange(editingAppointment.id, 'Confirmado');
+                       handleStatusChange(String(editingAppointment.id), 'Confirmado');
                        setEditingAppointment(prev => ({ ...prev, status: 'Confirmado' }));
                     }}
                     className="w-full bg-green-600 text-white py-4 rounded-xl font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-green-600/20"
@@ -532,7 +532,7 @@ export default function AdminAgenda({ onNavigate }: AdminAgendaProps) {
                 )}
                 
                 <button 
-                  onClick={() => handleDelete(editingAppointment.id)}
+                  onClick={() => handleDelete(String(editingAppointment.id))}
                   className="w-full bg-rose-50 text-rose-900 py-4 rounded-xl font-black uppercase tracking-widest flex items-center justify-center gap-2 border border-rose-100 hover:bg-rose-100 transition-colors"
                 >
                   <span className="material-symbols-outlined text-xl">delete</span>
