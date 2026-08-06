@@ -136,7 +136,6 @@ export default function App() {
 
 =======
       case "login":
-<<<<<<< HEAD
         return (
           <Login
             onNavigate={(view, email) => {
@@ -157,6 +156,7 @@ export default function App() {
           />
         );
 
+<<<<<<< HEAD
 =======
         return <Login onNavigate={handleAuthNavigate} />;
       case "register":
@@ -166,6 +166,8 @@ export default function App() {
         />;
 >>>>>>> origin/main
 >>>>>>> adac350 (Merge de la rama remota main)
+=======
+>>>>>>> ac1437f ( resolver conflicto de git en App.tsx)
       default:
         return <Welcome onNavigate={navigate} />;
     }
@@ -188,15 +190,9 @@ export default function App() {
 <<<<<<< HEAD
 =======
 
-<<<<<<< HEAD
       <GlobalNavigation
         currentView={currentView}
         onNavigate={setCurrentView}
-=======
-      <GlobalNavigation 
-        currentView={currentView} 
-        onNavigate={navigate} 
->>>>>>> origin/main
         userRole={userRole}
       />
 >>>>>>> adac350 (Merge de la rama remota main)
