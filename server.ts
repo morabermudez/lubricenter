@@ -1,181 +1,265 @@
 import express from "express";
-import { createServer as createViteServer } from "vite";
-import fs from "fs";
+import { MercadoPagoConfig, Preference } from "mercadopago";
 import path from "path";
 import { fileURLToPath } from "url";
-// Importamos las librerías oficiales de Mercado Pago
-import { MercadoPagoConfig, Preference } from 'mercadopago';
+import { createClient } from "@supabase/supabase-js";
+import { createServer as createViteServer } from "vite";
+import "dotenv/config";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY || process.env.VITE_SUPABASE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error(
+    "Faltan las variables SUPABASE_URL/SUPABASE_KEY o VITE_SUPABASE_URL/VITE_SUPABASE_KEY"
+  );
+}
+
+const supabase = createClient(
+  supabaseUrl,
+  supabaseKey
+);
+
+const normalizeClient = (client: any) => ({
+  ...client,
+  id: client.id_cliente,
+  name: client.nombre_cliente,
+  lastName: client.apellido_cliente,
+  phone: client.telefono,
+});
+
+const normalizeVehicle = (vehicle: any) => ({
+  ...vehicle,
+  plate: vehicle.patente,
+  clientId: vehicle.id_cli,
+  brand: vehicle.marca,
+  model: vehicle.modelo,
+});
+
+const normalizeAppointment = (appointment: any) => ({
+  ...appointment,
+  id: appointment.id_reserva,
+  phone: appointment.telefono,
+  oilType: appointment.tipo_aceite,
+  date: appointment.fec_res,
+  time: appointment.hora,
+  clientId: appointment.id_cli,
+  paymentId: appointment.id_pago,
+  stockId: appointment.id_stock,
+  status: "Pendiente",
+  color: "rose-900",
+});
+
+const normalizePayment = (payment: any) => ({
+  ...payment,
+  id: payment.id_pago,
+  method: payment.metodo_pago,
+  total: payment.monto_total,
+  reservationId: payment.id_reserva,
+});
+
+const normalizePaymentDetail = (detail: any) => ({
+  ...detail,
+  id: detail.id_detalle,
+  paymentId: detail.id_pago,
+  card: detail.tarjeta,
+  holder: detail.titular,
+});
+
+const normalizeEmployee = (employee: any) => ({
+  ...employee,
+  id: employee.id_empleado,
+  name: employee.nombre_empleado,
+  lastName: employee.apellido_empleado,
+  phone: employee.telefono,
+});
+
+const appointmentPayload = (appointment: any) => ({
+  ...appointment,
+  status: appointment.status ?? appointment.estado ?? "Pendiente",
+  service: appointment.service ?? appointment.oilType,
+});
+
+const normalizeProduct = (product: any) => ({
+  ...product,
+  id: product.id_stock,
+  name: product.tipo_aceite,
+  sku: `ACE-${product.id_stock}`,
+  category: "Aceites",
+  stock: product.cant_stock,
+  critical: product.cant_stock < 10,
+  icon: "inventory_2",
+  description: product.tipo_aceite,
+  price: product.precio,
+});
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
-  const DATA_PATH = path.join(__dirname, "data", "appointments.json");
 
   app.use(express.json());
 
-  // =========================================================================
-  // 1. CONFIGURACIÓN DE MERCADO PAGO (CON TU TOKEN COMPLETO DE PRUEBA)
-  // =========================================================================
-  const client = new MercadoPagoConfig({ 
-    accessToken: 'TEST-748337118059184-061714-78012f824f2e29f7927fc9dee43c626e-2520047460' 
+  const client = new MercadoPagoConfig({
+    accessToken: "TEST-748337118059184-061714-78012f824f2e29f7927fc9dee43c626e-2520047460",
   });
 
-  // =========================================================================
-  // 2. RUTA PARA RECIBIR LA SOLICITUD DEL FRONTEND (MODIFICADA CON INIT_POINT)
-  // =========================================================================
   app.post("/api/create_preference", async (req, res) => {
     try {
       const preference = new Preference(client);
-
-      // Limpiamos el precio: quitamos "$", espacios y puntos de miles para evitar romper la API
       let rawPrice = req.body.price ? String(req.body.price) : "1500";
       let cleanPrice = rawPrice.replace(/\$/g, "").replace(/\./g, "").replace(/,/g, ".").trim();
-      
-      const parsedPrice = Math.round(Number(cleanPrice)); // Lo redondeamos a entero por seguridad
-
-      console.log("-> Procesando preferencia para Mercado Pago:", {
-        title: req.body.title || "Seña de Servicio",
-        unit_price: parsedPrice
-      });
+      const parsedPrice = Math.round(Number(cleanPrice));
 
       const result = await preference.create({
         body: {
           items: [
             {
               id: "sena-lubricenter",
-              title: req.body.title || "Sena de Servicio - Lubricenter", 
+              title: req.body.title || "Sena de Servicio - Lubricenter",
               quantity: 1,
-              unit_price: parsedPrice, // Pasamos el número 100% limpio
-              currency_id: "ARS" 
-            }
+              unit_price: parsedPrice,
+              currency_id: "ARS",
+            },
           ],
-          backUrls: {
-            success: "http://localhost:3000/",
-            failure: "http://localhost:3000/",
-            pending: "http://localhost:3000/"
+          back_urls: {
+            success: `http://localhost:${PORT}/`,
+            failure: `http://localhost:${PORT}/`,
+            pending: `http://localhost:${PORT}/`,
           },
-          autoReturn: "approved",
-        }
+          auto_return: "approved",
+        },
       });
 
-      console.log("-> Preferencia creada con ID exitoso:", result.id);
-      
-      // DEVOLVEMOS EL ID Y EL LINK DIRECTO DE PAGO
-      res.json({ 
+      res.json({
         id: result.id,
-        init_point: result.init_point 
+        init_point: result.init_point,
       });
     } catch (error) {
-      console.error("Error crítico al generar la preferencia en Mercado Pago:", error);
+      console.error("Error al generar la preferencia en Mercado Pago:", error);
       res.status(500).json({ error: "No se pudo crear la preferencia de pago" });
     }
   });
 
-  // =========================================================================
-  // 3. RUTAS DE LAS CITAS (Tu lógica original de appointments)
-  // =========================================================================
-  app.get("/api/appointments", (req, res) => {
+  app.get("/api/appointments", async (_req, res) => {
     try {
-      if (!fs.existsSync(DATA_PATH)) {
-        return res.json([]);
-      }
-      const data = fs.readFileSync(DATA_PATH, "utf-8");
-      res.json(JSON.parse(data));
+      const { data, error } = await supabase.from("reservas").select("*");
+
+      if (error) throw error;
+
+      res.json((data ?? []).map(normalizeAppointment));
     } catch (error) {
-      res.status(500).json({ error: "No se pudieron cargar las citas" });
-    }
-  });
-
-  app.post("/api/appointments", (req, res) => {
-    try {
-      const newAppointment = req.body;
-      let appointments = [];
-      
-      if (fs.existsSync(DATA_PATH)) {
-        const data = fs.readFileSync(DATA_PATH, "utf-8");
-        appointments = JSON.parse(data);
-      } else {
-        const dir = path.dirname(DATA_PATH);
-        if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true });
-        }
-      }
-
-      appointments.push({
-        id: Date.now().toString(),
-        ...newAppointment,
-        status: newAppointment.status || "Pendiente",
-        color: newAppointment.color || "amber-400"
+      console.error(error);
+      res.status(500).json({
+        error: "No se pudieron cargar las citas",
       });
-
-      fs.writeFileSync(DATA_PATH, JSON.stringify(appointments, null, 2));
-      res.status(201).json(appointments[appointments.length - 1]);
-    } catch (error) {
-      res.status(500).json({ error: "No se pudo guardar la cita" });
     }
   });
 
-  app.delete("/api/appointments/:id", (req, res) => {
+  app.post("/api/appointments", async (req, res) => {
     try {
-      const { id } = req.params;
-      if (!fs.existsSync(DATA_PATH)) {
-        return res.status(404).json({ error: "No hay citas registradas" });
-      }
+      const { data, error } = await supabase
+        .from("reservas")
+        .insert([appointmentPayload(req.body)])
+        .select();
 
-      const data = fs.readFileSync(DATA_PATH, "utf-8");
-      let appointments = JSON.parse(data);
-      
-      const initialLength = appointments.length;
-      appointments = appointments.filter((apt: any) => apt.id !== id);
+      if (error) throw error;
 
-      if (appointments.length === initialLength) {
-        return res.status(404).json({ error: "Cita no encontrada" });
-      }
+      res.status(201).json(normalizeAppointment(data?.[0] ?? req.body));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        error: "No se pudo guardar la reserva",
+      });
+    }
+  });
 
-      fs.writeFileSync(DATA_PATH, JSON.stringify(appointments, null, 2));
+  app.delete("/api/appointments/:id", async (req, res) => {
+    try {
+      const { error } = await supabase
+        .from("reservas")
+        .delete()
+        .or(`id.eq.${req.params.id},id_reserva.eq.${req.params.id}`);
+
+      if (error) throw error;
+
       res.json({ success: true });
     } catch (error) {
-      res.status(500).json({ error: "No se pudo eliminar la cita" });
+      console.error(error);
+      res.status(500).json({
+        error: "No se pudo eliminar",
+      });
     }
   });
 
-  app.patch("/api/appointments/:id", (req, res) => {
+  app.patch("/api/appointments/:id", async (req, res) => {
     try {
-      const { id } = req.params;
-      const updates = req.body;
-      
-      if (!fs.existsSync(DATA_PATH)) {
-        return res.status(404).json({ error: "No hay citas registradas" });
-      }
+      const { data, error } = await supabase
+        .from("reservas")
+        .update(req.body)
+        .or(`id.eq.${req.params.id},id_reserva.eq.${req.params.id}`)
+        .select();
 
-      const data = fs.readFileSync(DATA_PATH, "utf-8");
-      let appointments = JSON.parse(data);
-      
-      const index = appointments.findIndex((apt: any) => apt.id === id);
-      if (index === -1) {
-        return res.status(404).json({ error: "Cita no encontrada" });
-      }
+      if (error) throw error;
 
-      appointments[index] = { ...appointments[index], ...updates };
-
-      fs.writeFileSync(DATA_PATH, JSON.stringify(appointments, null, 2));
-      res.json(appointments[index]);
+      res.json(normalizeAppointment(data?.[0] ?? { ...req.body, id: req.params.id }));
     } catch (error) {
-      res.status(500).json({ error: "No se pudo actualizar la cita" });
+      console.error(error);
+      res.status(500).json({
+        error: "No se pudo actualizar",
+      });
     }
   });
 
-  // =========================================================================
-  // 4. CONFIGURACIÓN DE VITE
-  // =========================================================================
-  const vite = await createViteServer({
-    server: { middlewareMode: true },
-    appType: "spa",
+  app.get("/api/inventory", async (_req, res) => {
+    try {
+      const { data, error } = await supabase.from("aceites").select("*");
+
+      if (error) throw error;
+
+      res.json((data ?? []).map(normalizeProduct));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        error: "No se pudo cargar el inventario",
+      });
+    }
   });
-  app.use(vite.middlewares);
+
+  app.patch("/api/inventory/:id", async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from("aceites")
+        .update(req.body)
+        .or(`id.eq.${req.params.id},id_stock.eq.${req.params.id},id_producto.eq.${req.params.id}`)
+        .select();
+
+      if (error) throw error;
+
+      res.json(normalizeProduct(data?.[0] ?? { ...req.body, id: req.params.id }));
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        error: "No se pudo actualizar el producto",
+      });
+    }
+  });
+
+  if (process.env.NODE_ENV !== "production") {
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: "spa",
+    });
+    app.use(vite.middlewares);
+  } else {
+    const distPath = path.join(process.cwd(), "dist");
+    app.use(express.static(distPath));
+    app.get("*", (_req, res) => {
+      res.sendFile(path.join(distPath, "index.html"));
+    });
+  }
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
