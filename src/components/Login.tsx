@@ -14,7 +14,7 @@ interface LoginProps {
 type StoredUser = {
   email: string;
   password: string;
-  role: "client" | "employee";
+  role: "client" | "employee" | "boss";
 };
 
 const STORAGE_KEY = "lubricenter-users";
@@ -22,6 +22,7 @@ const STORAGE_KEY = "lubricenter-users";
 const demoUsers = {
   client: { email: "cliente@lubricenter.com", password: "cliente123" },
   employee: { email: "empleado@lubricenter.com", password: "empleado123" },
+  boss: { email: "jefe@lubricenter.com", password: "jefe123" },
 };
 
 const getStoredUsers = (): StoredUser[] => {
@@ -123,7 +124,7 @@ export default function Login({ onNavigate, initialMode = "login" }: LoginProps)
     onNavigate("admin", email);
   };
 
-  const handleLogin = (role: "client" | "employee") => {
+  const handleLogin = (role: "client" | "employee" | "boss") => {
     const email = emailInput.trim().toLowerCase();
     const password = passwordInput.trim();
     const demoUser = demoUsers[role];
@@ -148,7 +149,8 @@ export default function Login({ onNavigate, initialMode = "login" }: LoginProps)
     }
 
     clearMessages();
-    onNavigate(role === "client" ? "booking" : "admin", email);
+    if (role === "boss") onNavigate("boss", email);
+    else onNavigate(role === "client" ? "booking" : "admin", email);
   };
 
   return (
@@ -282,6 +284,15 @@ export default function Login({ onNavigate, initialMode = "login" }: LoginProps)
 
                 <button
                   type="button"
+                  onClick={() => handleLogin("boss")}
+                  className="bg-amber-900 text-white w-full py-4 rounded-xl font-bold tracking-tight hover:bg-amber-800 active:scale-95 transition-transform flex items-center justify-center gap-3 shadow-lg shadow-amber-900/20"
+                >
+                  <span className="material-symbols-outlined">shield</span>
+                  Entrar como Jefe
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => {
                     setMode("register");
                     clearMessages();
@@ -299,6 +310,7 @@ export default function Login({ onNavigate, initialMode = "login" }: LoginProps)
           <div className="w-full mt-6 bg-white border border-stone-100 rounded-xl p-4 text-xs text-stone-500 leading-relaxed">
             <p><strong className="text-rose-900">Cliente demo:</strong> cliente@lubricenter.com / cliente123</p>
             <p><strong className="text-rose-900">Empleado demo:</strong> empleado@lubricenter.com / empleado123</p>
+            <p><strong className="text-amber-800">Jefe demo:</strong> jefe@lubricenter.com / jefe123</p>
           </div>
         )}
 

@@ -8,7 +8,7 @@ import { motion } from "motion/react";
 interface GlobalNavigationProps {
   currentView: string;
   onNavigate: (view: string) => void;
-  userRole?: 'none' | 'client' | 'employee';
+  userRole?: 'none' | 'client' | 'employee' | 'boss';
 }
 
 export default function GlobalNavigation({ currentView, onNavigate, userRole = 'none' }: GlobalNavigationProps) {
@@ -19,11 +19,12 @@ export default function GlobalNavigation({ currentView, onNavigate, userRole = '
 
   // Filter navigation items based on the user role
   const allNavItems = [
-    { id: 'home', label: 'Inicio', icon: 'home', roles: ['client', 'employee', 'none'] },
+    { id: 'home', label: 'Inicio', icon: 'home', roles: ['client', 'employee', 'boss', 'none'] },
     { id: 'booking', label: 'Servicios', icon: 'build', roles: ['client'] },
     { id: 'inventory', label: 'Stock', icon: 'inventory_2', roles: ['employee'] },
     { id: 'admin', label: 'Citas', icon: 'event_available', roles: ['employee'] },
-    { id: 'login', label: 'Perfil', icon: 'person', roles: ['client', 'employee', 'none'] },
+    { id: 'boss', label: 'Dashboard', icon: 'monitoring', roles: ['boss'] },
+    { id: 'login', label: 'Perfil', icon: 'person', roles: ['client', 'employee', 'boss', 'none'] },
   ];
 
   const navItems = allNavItems.filter(item => item.roles.includes(userRole));
