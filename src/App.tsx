@@ -57,11 +57,7 @@ export default function App() {
     else if (view === 'admin' || view === 'inventory' || view === 'admin-booking') setUserRole('employee');
     else if (view === 'booking' || view === 'home') setUserRole('client');
 
-    if (view === 'back') {
-      setCurrentView(previousView);
-    } else {
-      setCurrentView(view);
-    }
+    navigate(view);
   };
 
   const renderView = () => {
@@ -93,6 +89,12 @@ export default function App() {
         );
 
       case "confirmation":
+        return (
+          <Confirmation
+            onNavigate={navigate}
+            bookingData={bookingData}
+          />
+        );
 
       case "admin":
         return <AdminAgenda onNavigate={navigate} />;
@@ -111,7 +113,14 @@ export default function App() {
           />
         );
 
+      case "boss":
+        return <BossDashboard onNavigate={navigate} />;
+
       case "login":
+        return <Login onNavigate={handleAuthNavigate} initialMode="login" />;
+
+      case "register":
+        return <Login onNavigate={handleAuthNavigate} initialMode="register" />;
 
       default:
         return <Welcome onNavigate={navigate} />;
@@ -132,10 +141,6 @@ export default function App() {
           {renderView()}
         </motion.div>
       </AnimatePresence>
-
-
-        userRole={userRole}
-      />
     </div>
   );
 }

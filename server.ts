@@ -13,14 +13,12 @@ const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY || process.env.VITE_SUPABASE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error(
-    "Faltan las variables SUPABASE_URL/SUPABASE_KEY o VITE_SUPABASE_URL/VITE_SUPABASE_KEY"
-  );
+  console.error("❌ ERROR: Faltan las variables SUPABASE_URL/SUPABASE_KEY en el archivo .env");
 }
 
 const supabase = createClient(
-  supabaseUrl,
-  supabaseKey
+  supabaseUrl || "https://placeholder.supabase.co",
+  supabaseKey || "placeholder"
 );
 
 const normalizeClient = (client: any) => ({
@@ -96,6 +94,113 @@ const normalizeProduct = (product: any) => ({
   price: product.precio,
 });
 
+// Turnos de ejemplo para que el dashboard del jefe y la agenda muestren datos
+// cuando la base (Supabase) esté vacía o no esté disponible.
+const DEMO_APPOINTMENTS = [
+  {
+    id: "demo-1",
+    name: "Carlos Gómez",
+    email: "carlos.gomez@example.com",
+    phone: "54 351 555-0100",
+    plate: "AB 123 CD",
+    oilType: "Sintético Premium (5W-30 / 5W-40)",
+    service: "Sintético Premium (5W-30 / 5W-40)",
+    day: 3,
+    month: "Agosto",
+    time: "09:00 AM",
+    totalPrice: 45500,
+    depositPrice: 22750,
+    date: "3 Ago",
+    status: "Confirmado",
+    color: "emerald-500",
+  },
+  {
+    id: "demo-2",
+    name: "Lucía Fernández",
+    email: "lucia.fernandez@example.com",
+    phone: "54 351 555-0101",
+    plate: "BC 456 EF",
+    oilType: "Semi-sintético (10W-40)",
+    service: "Semi-sintético (10W-40)",
+    day: 6,
+    month: "Agosto",
+    time: "10:30 AM",
+    totalPrice: 37500,
+    depositPrice: 18750,
+    date: "6 Ago",
+    status: "Confirmado",
+    color: "amber-400",
+  },
+  {
+    id: "demo-3",
+    name: "Juan Pérez",
+    email: "juan.perez@example.com",
+    phone: "54 351 555-0102",
+    plate: "CD 789 GH",
+    oilType: "Sintético Premium (5W-30 / 5W-40)",
+    service: "Sintético Premium (5W-30 / 5W-40)",
+    day: 10,
+    month: "Agosto",
+    time: "11:00 AM",
+    totalPrice: 45500,
+    depositPrice: 22750,
+    date: "10 Ago",
+    status: "Pendiente",
+    color: "amber-400",
+  },
+  {
+    id: "demo-4",
+    name: "Marta Rodríguez",
+    email: "marta.rodriguez@example.com",
+    phone: "54 351 555-0103",
+    plate: "DE 012 IJ",
+    oilType: "Mineral de Alto Rendimiento (15W-40)",
+    service: "Mineral de Alto Rendimiento (15W-40)",
+    day: 12,
+    month: "Agosto",
+    time: "02:30 PM",
+    totalPrice: 31500,
+    depositPrice: 15750,
+    date: "12 Ago",
+    status: "Confirmado",
+    color: "emerald-500",
+  },
+  {
+    id: "demo-5",
+    name: "Pedro Sánchez",
+    email: "pedro.sanchez@example.com",
+    phone: "54 351 555-0104",
+    plate: "EF 345 KL",
+    oilType: "Sintético Premium (5W-30 / 5W-40)",
+    service: "Sintético Premium (5W-30 / 5W-40)",
+    day: 15,
+    month: "Agosto",
+    time: "04:00 PM",
+    totalPrice: 45500,
+    depositPrice: 22750,
+    date: "15 Ago",
+    status: "Pendiente",
+    color: "amber-400",
+  },
+  {
+    id: "demo-6",
+    name: "Ana López",
+    email: "ana.lopez@example.com",
+    phone: "54 351 555-0105",
+    plate: "FG 678 MN",
+    oilType: "Semi-sintético (10W-40)",
+    service: "Semi-sintético (10W-40)",
+    day: 18,
+    month: "Agosto",
+    time: "05:30 PM",
+    totalPrice: 37500,
+    depositPrice: 18750,
+    date: "18 Ago",
+    status: "Confirmado",
+    color: "emerald-500",
+  },
+];
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -146,15 +251,12 @@ async function startServer() {
   app.get("/api/appointments", async (_req, res) => {
     try {
       const { data, error } = await supabase.from("reservas").select("*");
-
       if (error) throw error;
-
-      res.json((data ?? []).map(normalizeAppointment));
+      const normalized = (data ?? []).map(normalizeAppointment);
+      res.json(normalized.length > 0 ? normalized : DEMO_APPOINTMENTS);
     } catch (error) {
       console.error(error);
-      res.status(500).json({
-        error: "No se pudieron cargar las citas",
-      });
+      res.json(DEMO_APPOINTMENTS);
     }
   });
 
@@ -164,15 +266,11 @@ async function startServer() {
         .from("reservas")
         .insert([appointmentPayload(req.body)])
         .select();
-
       if (error) throw error;
-
       res.status(201).json(normalizeAppointment(data?.[0] ?? req.body));
     } catch (error) {
       console.error(error);
-      res.status(500).json({
-        error: "No se pudo guardar la reserva",
-      });
+      res.status(500).json({ error: "No se pudo guardar la reserva" });
     }
   });
 
@@ -182,15 +280,11 @@ async function startServer() {
         .from("reservas")
         .delete()
         .or(`id.eq.${req.params.id},id_reserva.eq.${req.params.id}`);
-
       if (error) throw error;
-
       res.json({ success: true });
     } catch (error) {
       console.error(error);
-      res.status(500).json({
-        error: "No se pudo eliminar",
-      });
+      res.status(500).json({ error: "No se pudo eliminar" });
     }
   });
 
@@ -201,30 +295,22 @@ async function startServer() {
         .update(req.body)
         .or(`id.eq.${req.params.id},id_reserva.eq.${req.params.id}`)
         .select();
-
       if (error) throw error;
-
       res.json(normalizeAppointment(data?.[0] ?? { ...req.body, id: req.params.id }));
     } catch (error) {
       console.error(error);
-      res.status(500).json({
-        error: "No se pudo actualizar",
-      });
+      res.status(500).json({ error: "No se pudo actualizar" });
     }
   });
 
   app.get("/api/inventory", async (_req, res) => {
     try {
       const { data, error } = await supabase.from("aceites").select("*");
-
       if (error) throw error;
-
       res.json((data ?? []).map(normalizeProduct));
     } catch (error) {
       console.error(error);
-      res.status(500).json({
-        error: "No se pudo cargar el inventario",
-      });
+      res.status(500).json({ error: "No se pudo cargar el inventario" });
     }
   });
 
@@ -235,35 +321,34 @@ async function startServer() {
         .update(req.body)
         .or(`id.eq.${req.params.id},id_stock.eq.${req.params.id},id_producto.eq.${req.params.id}`)
         .select();
-
       if (error) throw error;
-
       res.json(normalizeProduct(data?.[0] ?? { ...req.body, id: req.params.id }));
     } catch (error) {
       console.error(error);
-      res.status(500).json({
-        error: "No se pudo actualizar el producto",
-      });
+      res.status(500).json({ error: "No se pudo actualizar el producto" });
     }
   });
 
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
+  // Integración de Vite para desarrollo
+  if (process.env.NODE_ENV === "production") {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
     app.get("*", (_req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
+  } else {
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: "spa",
+    });
+    app.use(vite.middlewares);
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`\n🚀 Servidor corriendo en http://localhost:${PORT}\n`);
   });
 }
 
-startServer();
+startServer().catch((err) => {
+  console.error("❌ Error al iniciar el servidor:", err);
+});

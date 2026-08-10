@@ -36,6 +36,8 @@ export default function BossDashboard({ onNavigate }: BossDashboardProps) {
   const totalDeposits = appointments.reduce((sum, a) => sum + (a.depositPrice || 0), 0);
   const pendingCount = appointments.filter(a => a.status === "Pendiente").length;
   const confirmedCount = appointments.filter(a => a.status === "Confirmado").length;
+  const totalAppointments = appointments.length;
+  const averageTicket = totalAppointments ? Math.round(totalIncome / totalAppointments) : 0;
   const totalProducts = inventoryProducts.length;
   const criticalStock = inventoryProducts.filter(p => p.critical).length;
   const totalStockValue = inventoryProducts.reduce((sum, p) => sum + p.stock * p.price, 0);
@@ -130,6 +132,28 @@ export default function BossDashboard({ onNavigate }: BossDashboardProps) {
                 </span>
                 <p className="text-3xl font-black text-[#1a1c1c] mt-2">
                   ${totalDeposits.toLocaleString("es-AR")}
+                </p>
+              </div>
+              <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm">
+                <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
+                  Turnos Totales
+                </span>
+                <p className="text-3xl font-black text-[#1a1c1c] mt-2">
+                  {totalAppointments.toString().padStart(2, "0")}
+                </p>
+                <p className="text-xs text-stone-500 mt-1">
+                  {confirmedCount} confirmados · {pendingCount} pendientes
+                </p>
+              </div>
+              <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm">
+                <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
+                  Ticket Promedio
+                </span>
+                <p className="text-3xl font-black text-[#1a1c1c] mt-2">
+                  ${averageTicket.toLocaleString("es-AR")}
+                </p>
+                <p className="text-xs text-stone-500 mt-1">
+                  por servicio realizado
                 </p>
               </div>
               <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm">
