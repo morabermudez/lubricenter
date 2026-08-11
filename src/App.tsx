@@ -53,14 +53,9 @@ export default function App() {
 
   const handleAuthNavigate = (view: string, email?: string) => {
     if (email) setUserEmail(email);
-<<<<<<< HEAD
+    if (view === 'admin' || view === 'inventory' || view === 'admin-booking') setUserRole('employee');
     if (view === 'boss') setUserRole('boss');
     else if (view === 'admin' || view === 'inventory' || view === 'admin-booking') setUserRole('employee');
-    else if (view === 'booking' || view === 'home') setUserRole('client');
-
-    navigate(view);
-=======
-    if (view === 'admin' || view === 'inventory' || view === 'admin-booking') setUserRole('employee');
     else if (view === 'booking' || view === 'home') setUserRole('client');
 
     if (view === 'back') {
@@ -68,7 +63,6 @@ export default function App() {
     } else {
       setCurrentView(view);
     }
->>>>>>> adac350 (Merge de la rama remota main)
   };
 
   const renderView = () => {
@@ -124,17 +118,6 @@ export default function App() {
           />
         );
 
-<<<<<<< HEAD
-      case "boss":
-        return <BossDashboard onNavigate={navigate} />;
-
-      case "login":
-        return <Login onNavigate={handleAuthNavigate} initialMode="login" />;
-
-      case "register":
-        return <Login onNavigate={handleAuthNavigate} initialMode="register" />;
-
-=======
       case "login":
         return (
           <Login
@@ -156,18 +139,6 @@ export default function App() {
           />
         );
 
-<<<<<<< HEAD
-=======
-        return <Login onNavigate={handleAuthNavigate} />;
-      case "register":
-        return <Login 
-          initialMode="register"
-          onNavigate={handleAuthNavigate} 
-        />;
->>>>>>> origin/main
->>>>>>> adac350 (Merge de la rama remota main)
-=======
->>>>>>> ac1437f ( resolver conflicto de git en App.tsx)
       default:
         return <Welcome onNavigate={navigate} />;
     }
@@ -187,15 +158,12 @@ export default function App() {
           {renderView()}
         </motion.div>
       </AnimatePresence>
-<<<<<<< HEAD
-=======
 
       <GlobalNavigation
         currentView={currentView}
         onNavigate={setCurrentView}
         userRole={userRole}
       />
->>>>>>> adac350 (Merge de la rama remota main)
     </div>
   );
 }
