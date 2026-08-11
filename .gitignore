@@ -1,0 +1,53 @@
+# ==========================================
+# Archivos de entorno y credenciales (CRÍTICO)
+# ==========================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# ==========================================
+# Dependencias de Node
+# ==========================================
+node_modules/
+/.pnp
+.pnp.js
+
+# ==========================================
+# Archivos de compilación y salida (Builds)
+# ==========================================
+dist/
+build/
+.next/
+out/
+bin/
+
+# ==========================================
+# Logs y temporales
+# ==========================================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+logs/
+*.log
+
+# ==========================================
+# Configuración del editor e IDEs
+# ==========================================
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# ==========================================
+# Archivos del sistema operativo
+# ==========================================
+.DS_Store
+Thumbs.db
