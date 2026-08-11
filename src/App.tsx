@@ -116,7 +116,6 @@ export default function App() {
         );
 
       case "login":
-<<<<<<< HEAD
         return (
           <Login
             onNavigate={(view, email) => {
@@ -137,14 +136,6 @@ export default function App() {
           />
         );
 
-=======
-        return <Login onNavigate={handleAuthNavigate} />;
-      case "register":
-        return <Login 
-          initialMode="register"
-          onNavigate={handleAuthNavigate} 
-        />;
->>>>>>> origin/main
       default:
         return <Welcome onNavigate={navigate} />;
     }
@@ -165,15 +156,9 @@ export default function App() {
         </motion.div>
       </AnimatePresence>
 
-<<<<<<< HEAD
       <GlobalNavigation
         currentView={currentView}
         onNavigate={setCurrentView}
-=======
-      <GlobalNavigation 
-        currentView={currentView} 
-        onNavigate={navigate} 
->>>>>>> origin/main
         userRole={userRole}
       />
     </div>
