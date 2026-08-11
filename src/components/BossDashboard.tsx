@@ -57,10 +57,14 @@ export default function BossDashboard({ onNavigate }: BossDashboardProps) {
               Lubricenter
             </h1>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
-              Panel del Jefe
-            </span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => onNavigate('admin')}
+              className="text-rose-900 text-xs font-black uppercase tracking-wider flex items-center gap-1 bg-rose-50 hover:bg-rose-100 px-4 py-2 rounded-xl transition-colors"
+            >
+              <span className="material-symbols-outlined text-base">calendar_today</span>
+              Ver Agenda de Citas
+            </button>
             <div className="w-8 h-8 rounded-full bg-rose-900 text-white flex items-center justify-center font-bold text-xs shadow-lg">
               JD
             </div>

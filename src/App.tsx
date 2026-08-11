@@ -13,6 +13,7 @@ import Confirmation from "./components/Confirmation";
 import AdminAgenda from "./components/AdminAgenda";
 import BossDashboard from "./components/BossDashboard";
 import Login from "./components/Login";
+import MyBookings from "./components/MyBookings";
 import GlobalNavigation from "./components/GlobalNavigation";
 import { motion, AnimatePresence } from "motion/react";
 import { saveAppointment } from "./services/bookingService";
@@ -98,6 +99,9 @@ export default function App() {
 
       case "admin":
         return <AdminAgenda onNavigate={navigate} />;
+
+      case "my-bookings":
+        return <MyBookings onNavigate={navigate} userEmail={userEmail} />;
 
       case "admin-booking":
         return (

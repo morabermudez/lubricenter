@@ -4,8 +4,8 @@
  */
 
 import { useState } from "react";
-import { motion } from "motion/react";
 import { BookingData } from "../App";
+import { saveAppointment } from "../services/bookingService";
 // Importamos el SDK oficial de Mercado Pago
 import { initMercadoPago } from '@mercadopago/sdk-react';
 
@@ -28,6 +28,8 @@ export default function Checkout({ onNavigate, bookingData }: CheckoutProps) {
   const handlePayment = async () => {
     setIsLoading(true);
     try {
+      await saveAppointment(bookingData);
+
       const priceToSend = bookingData && bookingData.depositPrice ? bookingData.depositPrice : 1500;
       const titleToSend = bookingData && bookingData.oilType ? bookingData.oilType.split(' (')[0] : "Seña de Servicio";
 
@@ -53,7 +55,7 @@ export default function Checkout({ onNavigate, bookingData }: CheckoutProps) {
       }
     } catch (error) {
       console.error("Error al conectar con el servidor:", error);
-      alert("Hubo un error al procesar la solicitud de pago.");
+      alert("No se pudo guardar el turno ni generar el pago. Verifica el servidor.");
     } finally {
       setIsLoading(false);
     }
