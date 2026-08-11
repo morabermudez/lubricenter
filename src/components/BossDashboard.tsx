@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { fetchAppointments } from "../services/bookingService";
+import ExpirationAlerts from "./ExpirationAlerts";
 
 interface BossDashboardProps {
   onNavigate: (view: string) => void;
@@ -73,6 +74,8 @@ export default function BossDashboard({ onNavigate }: BossDashboardProps) {
       </header>
 
       <main className="pt-24 pb-32 px-6 max-w-7xl mx-auto">
+        <ExpirationAlerts />
+
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}

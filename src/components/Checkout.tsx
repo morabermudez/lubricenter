@@ -5,12 +5,11 @@
 
 import { useState } from "react";
 import { BookingData } from "../App";
-import { saveAppointment } from "../services/bookingService";
 // Importamos el SDK oficial de Mercado Pago
 import { initMercadoPago } from '@mercadopago/sdk-react';
 
-// Inicializamos el SDK asegurando que la clave pública esté perfecta
-initMercadoPago('TEST-683fdcce-83ef-408d-98fd-c7fe76884ccd', {
+// Inicializamos el SDK con la clave pública del entorno (o la de test como respaldo)
+initMercadoPago(import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY || 'TEST-683fdcce-83ef-408d-98fd-c7fe76884ccd', {
   locale: 'es-AR'
 });
 
@@ -24,11 +23,13 @@ export default function Checkout({ onNavigate, bookingData }: CheckoutProps) {
 
   if (!bookingData) return null;
 
-  // Función para solicitar la orden de pago y redireccionar de forma directa
+  // Función para solicitar la orden de pago y redireccionar de forma directa.
+  // El turno se guarda recién cuando el pago se aprueba (ver Confirmation).
   const handlePayment = async () => {
     setIsLoading(true);
     try {
-      await saveAppointment(bookingData);
+      // Guardamos la reserva pendiente para restaurarla al volver de Mercado Pago.
+      localStorage.setItem("lubricenter-pending-booking", JSON.stringify(bookingData));
 
       const priceToSend = bookingData && bookingData.depositPrice ? bookingData.depositPrice : 1500;
       const titleToSend = bookingData && bookingData.oilType ? bookingData.oilType.split(' (')[0] : "Seña de Servicio";
@@ -39,23 +40,29 @@ export default function Checkout({ onNavigate, bookingData }: CheckoutProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          title: titleToSend, 
+          title: titleToSend,
           quantity: 1,
-          price: priceToSend, 
+          price: priceToSend,
+          email: bookingData.email,
+          booking: bookingData,
         }),
       });
+
+      if (!response.ok) throw new Error(`create_preference HTTP ${response.status}`);
 
       const data = await response.json();
 
       // Si el servidor nos devuelve el init_point, mandamos al usuario directo a Mercado Pago
       if (data.init_point) {
-        window.location.href = data.init_point; 
+        window.location.href = data.init_point;
       } else {
-        alert("No se pudo generar la orden de pago. Verifica el servidor.");
+        localStorage.removeItem("lubricenter-pending-booking");
+        alert("No se guardó el turno: no se pudo generar la orden de pago.");
       }
     } catch (error) {
-      console.error("Error al conectar con el servidor:", error);
-      alert("No se pudo guardar el turno ni generar el pago. Verifica el servidor.");
+      console.error("Error al conectar con Mercado Pago:", error);
+      localStorage.removeItem("lubricenter-pending-booking");
+      alert("No se guardó el turno: no se pudo conectar con la API de Mercado Pago.");
     } finally {
       setIsLoading(false);
     }
