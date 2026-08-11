@@ -11,6 +11,7 @@ import Inventory from "./components/Inventory";
 import Checkout from "./components/Checkout";
 import Confirmation from "./components/Confirmation";
 import AdminAgenda from "./components/AdminAgenda";
+import BossDashboard from "./components/BossDashboard";
 import Login from "./components/Login";
 import GlobalNavigation from "./components/GlobalNavigation";
 import { motion, AnimatePresence } from "motion/react";
@@ -32,7 +33,7 @@ export interface BookingData {
 export default function App() {
   const [currentView, setCurrentView] = useState("landing");
   const [previousView, setPreviousView] = useState("landing");
-  const [userRole, setUserRole] = useState<"none" | "client" | "employee">("none");
+  const [userRole, setUserRole] = useState<"none" | "client" | "employee" | "boss">("none");
   const [userEmail, setUserEmail] = useState("");
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
 
@@ -52,6 +53,13 @@ export default function App() {
 
   const handleAuthNavigate = (view: string, email?: string) => {
     if (email) setUserEmail(email);
+<<<<<<< HEAD
+    if (view === 'boss') setUserRole('boss');
+    else if (view === 'admin' || view === 'inventory' || view === 'admin-booking') setUserRole('employee');
+    else if (view === 'booking' || view === 'home') setUserRole('client');
+
+    navigate(view);
+=======
     if (view === 'admin' || view === 'inventory' || view === 'admin-booking') setUserRole('employee');
     else if (view === 'booking' || view === 'home') setUserRole('client');
 
@@ -60,6 +68,7 @@ export default function App() {
     } else {
       setCurrentView(view);
     }
+>>>>>>> adac350 (Merge de la rama remota main)
   };
 
   const renderView = () => {
@@ -115,8 +124,18 @@ export default function App() {
           />
         );
 
-      case "login":
 <<<<<<< HEAD
+      case "boss":
+        return <BossDashboard onNavigate={navigate} />;
+
+      case "login":
+        return <Login onNavigate={handleAuthNavigate} initialMode="login" />;
+
+      case "register":
+        return <Login onNavigate={handleAuthNavigate} initialMode="register" />;
+
+=======
+      case "login":
         return (
           <Login
             onNavigate={(view, email) => {
@@ -137,6 +156,7 @@ export default function App() {
           />
         );
 
+<<<<<<< HEAD
 =======
         return <Login onNavigate={handleAuthNavigate} />;
       case "register":
@@ -145,6 +165,9 @@ export default function App() {
           onNavigate={handleAuthNavigate} 
         />;
 >>>>>>> origin/main
+>>>>>>> adac350 (Merge de la rama remota main)
+=======
+>>>>>>> ac1437f ( resolver conflicto de git en App.tsx)
       default:
         return <Welcome onNavigate={navigate} />;
     }
@@ -164,18 +187,15 @@ export default function App() {
           {renderView()}
         </motion.div>
       </AnimatePresence>
-
 <<<<<<< HEAD
+=======
+
       <GlobalNavigation
         currentView={currentView}
         onNavigate={setCurrentView}
-=======
-      <GlobalNavigation 
-        currentView={currentView} 
-        onNavigate={navigate} 
->>>>>>> origin/main
         userRole={userRole}
       />
+>>>>>>> adac350 (Merge de la rama remota main)
     </div>
   );
 }
