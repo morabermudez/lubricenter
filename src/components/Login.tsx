@@ -14,11 +14,6 @@ interface LoginProps {
 type StoredUser = {
   email: string;
   password: string;
-<<<<<<< HEAD
-  role: "client" | "employee" | "boss";
-=======
-  role: "client" | "employee";
->>>>>>> adac350 (Merge de la rama remota main)
 };
 
 const STORAGE_KEY = "lubricenter-users";
@@ -26,10 +21,9 @@ const STORAGE_KEY = "lubricenter-users";
 const demoUsers = {
   client: { email: "cliente@lubricenter.com", password: "cliente123" },
   employee: { email: "empleado@lubricenter.com", password: "empleado123" },
-<<<<<<< HEAD
+
   boss: { email: "jefe@lubricenter.com", password: "jefe123" },
-=======
->>>>>>> adac350 (Merge de la rama remota main)
+
 };
 
 const getStoredUsers = (): StoredUser[] => {
@@ -131,11 +125,10 @@ export default function Login({ onNavigate, initialMode = "login" }: LoginProps)
     onNavigate("admin", email);
   };
 
-<<<<<<< HEAD
+
   const handleLogin = (role: "client" | "employee" | "boss") => {
-=======
-  const handleLogin = (role: "client" | "employee") => {
->>>>>>> adac350 (Merge de la rama remota main)
+
+
     const email = emailInput.trim().toLowerCase();
     const password = passwordInput.trim();
     const demoUser = demoUsers[role];
@@ -150,7 +143,7 @@ export default function Login({ onNavigate, initialMode = "login" }: LoginProps)
     const isStoredUser = getStoredUsers().some(user =>
       user.email === email &&
       user.password === password &&
-      (user.role || "client") === role
+      ((user as any).role || "client") === role
     );
 
     if (!isDemoUser && !isStoredUser) {
@@ -160,12 +153,12 @@ export default function Login({ onNavigate, initialMode = "login" }: LoginProps)
     }
 
     clearMessages();
-<<<<<<< HEAD
+
     if (role === "boss") onNavigate("boss", email);
     else onNavigate(role === "client" ? "booking" : "admin", email);
-=======
+
     onNavigate(role === "client" ? "booking" : "admin", email);
->>>>>>> adac350 (Merge de la rama remota main)
+
   };
 
   return (
@@ -299,7 +292,7 @@ export default function Login({ onNavigate, initialMode = "login" }: LoginProps)
 
                 <button
                   type="button"
-<<<<<<< HEAD
+
                   onClick={() => handleLogin("boss")}
                   className="bg-amber-900 text-white w-full py-4 rounded-xl font-bold tracking-tight hover:bg-amber-800 active:scale-95 transition-transform flex items-center justify-center gap-3 shadow-lg shadow-amber-900/20"
                 >
@@ -309,8 +302,7 @@ export default function Login({ onNavigate, initialMode = "login" }: LoginProps)
 
                 <button
                   type="button"
-=======
->>>>>>> adac350 (Merge de la rama remota main)
+
                   onClick={() => {
                     setMode("register");
                     clearMessages();
@@ -328,10 +320,9 @@ export default function Login({ onNavigate, initialMode = "login" }: LoginProps)
           <div className="w-full mt-6 bg-white border border-stone-100 rounded-xl p-4 text-xs text-stone-500 leading-relaxed">
             <p><strong className="text-rose-900">Cliente demo:</strong> cliente@lubricenter.com / cliente123</p>
             <p><strong className="text-rose-900">Empleado demo:</strong> empleado@lubricenter.com / empleado123</p>
-<<<<<<< HEAD
+
             <p><strong className="text-amber-800">Jefe demo:</strong> jefe@lubricenter.com / jefe123</p>
-=======
->>>>>>> adac350 (Merge de la rama remota main)
+
           </div>
         )}
 
