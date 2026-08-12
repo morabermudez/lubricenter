@@ -90,11 +90,16 @@ export default function App() {
 
   const handleAuthNavigate = (view: string, email?: string) => {
     if (email) setUserEmail(email);
+    if (view === 'admin' || view === 'inventory' || view === 'admin-booking') setUserRole('employee');
     if (view === 'boss') setUserRole('boss');
     else if (view === 'admin' || view === 'inventory' || view === 'admin-booking') setUserRole('employee');
     else if (view === 'booking' || view === 'home') setUserRole('client');
 
-    navigate(view);
+    if (view === 'back') {
+      setCurrentView(previousView);
+    } else {
+      setCurrentView(view);
+    }
   };
 
   const renderView = () => {
@@ -153,14 +158,26 @@ export default function App() {
           />
         );
 
-      case "boss":
-        return <BossDashboard onNavigate={navigate} />;
-
       case "login":
-        return <Login onNavigate={handleAuthNavigate} initialMode="login" />;
+        return (
+          <Login
+            onNavigate={(view, email) => {
+              if (email) setUserEmail(email);
 
-      case "register":
-        return <Login onNavigate={handleAuthNavigate} initialMode="register" />;
+              if (view === "admin" || view === "inventory") {
+                setUserRole("employee");
+              } else if (view === "booking" || view === "home") {
+                setUserRole("client");
+              }
+
+              if (view === "back") {
+                setCurrentView(previousView);
+              } else {
+                setCurrentView(view);
+              }
+            }}
+          />
+        );
 
       default:
         return <Welcome onNavigate={navigate} />;
@@ -181,6 +198,12 @@ export default function App() {
           {renderView()}
         </motion.div>
       </AnimatePresence>
+
+      <GlobalNavigation
+        currentView={currentView}
+        onNavigate={setCurrentView}
+        userRole={userRole}
+      />
     </div>
   );
 }
