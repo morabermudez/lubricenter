@@ -53,7 +53,13 @@ export async function createPreference(input: CreatePreferenceInput) {
     },
   });
 
-  return { id: result.id, init_point: result.init_point };
+  // En modo de prueba usamos el sandbox de Mercado Pago para que las tarjetas
+  // de test (5031 7557 3453 0604) se aprueben. En producción va al checkout real.
+  const checkoutUrl = config.mercadopagoTestMode
+    ? result.sandbox_init_point || result.init_point
+    : result.init_point;
+
+  return { id: result.id, init_point: checkoutUrl };
 }
 
 export async function fetchPayment(paymentId: string): Promise<any> {

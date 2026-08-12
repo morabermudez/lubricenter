@@ -7,6 +7,7 @@ export const config = {
   appUrl: process.env.APP_URL || `http://localhost:${port}`,
   mercadopagoAccessToken: (process.env.MERCADOPAGO_ACCESS_TOKEN || "").trim(),
   mercadopagoPublicKey: (process.env.VITE_MERCADOPAGO_PUBLIC_KEY || "").trim(),
+  mercadopagoTestMode: process.env.MERCADOPAGO_TEST_MODE === "true",
   mercadopagoTokenExpires: (process.env.MERCADOPAGO_TOKEN_EXPIRES || "").trim(),
   deployExpires: (process.env.DEPLOY_EXPIRES || "").trim(),
   deployUrl: (process.env.DEPLOY_URL || "").trim(),
