@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useEffect, useRef } from "react";
+import { useMemo } from "react";
 import { motion } from "motion/react";
 import { BookingData } from "../App";
-import { saveAppointment } from "../services/bookingService";
 
 interface ConfirmationProps {
   onNavigate: (view: string) => void;
@@ -14,18 +13,9 @@ interface ConfirmationProps {
 }
 
 export default function Confirmation({ onNavigate, bookingData }: ConfirmationProps) {
-  const hasSaved = useRef(false);
-
-  useEffect(() => {
-    if (bookingData && !hasSaved.current) {
-      saveAppointment(bookingData).catch(console.error);
-      hasSaved.current = true;
-    }
-  }, [bookingData]);
+  const reservationId = useMemo(() => Math.floor(100000 + Math.random() * 900000), []);
 
   if (!bookingData) return null;
-
-  const reservationId = Math.floor(100000 + Math.random() * 900000);
 
   return (
     <div className="min-h-screen bg-[#f9f9f9] flex flex-col font-manrope">
@@ -58,8 +48,8 @@ export default function Confirmation({ onNavigate, bookingData }: ConfirmationPr
           >
             <span className="material-symbols-outlined text-green-600 text-6xl" style={{ fontVariationSettings: '"FILL" 1' }}>check_circle</span>
           </motion.div>
-          <h2 className="text-4xl md:text-5xl font-extrabold tracking-[-0.02em] mb-4">¡Pago realizado con éxito!</h2>
-          <p className="text-[#584141] text-lg font-medium">Tu turno ha sido confirmado</p>
+          <h2 className="text-4xl md:text-5xl font-extrabold tracking-[-0.02em] mb-4">¡Turno reservado con éxito!</h2>
+          <p className="text-[#584141] text-lg font-medium">Tu pago fue aprobado y tu turno quedó guardado</p>
         </div>
 
         <div className="w-full grid md:grid-cols-12 gap-8 items-start">

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Welcome from "./components/Welcome";
 import Landing from "./components/Landing";
 import Booking from "./components/Booking";
@@ -13,9 +13,10 @@ import Confirmation from "./components/Confirmation";
 import AdminAgenda from "./components/AdminAgenda";
 import BossDashboard from "./components/BossDashboard";
 import Login from "./components/Login";
+import MyBookings from "./components/MyBookings";
 import GlobalNavigation from "./components/GlobalNavigation";
 import { motion, AnimatePresence } from "motion/react";
-import { saveAppointment } from "./services/bookingService";
+import { saveAppointment, verifyPayment } from "./services/bookingService";
 
 export interface BookingData {
   name: string;
@@ -50,6 +51,42 @@ export default function App() {
     if (email) setUserEmail(email);
     setCurrentView(view);
   };
+
+  // Al volver de Mercado Pago restauramos la reserva pendiente. Si el pago fue
+  // aprobado, además verificamos en el servidor que el turno quedó registrado
+  // (el webhook es la fuente primaria; esto cubre demoras del webhook).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get("payment");
+    const status = params.get("status");
+    const paymentId = params.get("payment_id");
+    const hasPaymentInfo = payment || status;
+    if (!hasPaymentInfo) return;
+
+    const pending = localStorage.getItem("lubricenter-pending-booking");
+    localStorage.removeItem("lubricenter-pending-booking");
+
+    const isSuccess = payment === "success" || status === "approved";
+    if (isSuccess && pending) {
+      try {
+        const saved = JSON.parse(pending) as BookingData;
+        setBookingData(saved);
+        setUserEmail(saved.email);
+        setUserRole("client");
+        setCurrentView("confirmation");
+
+        if (paymentId) {
+          verifyPayment(paymentId).catch((error) => {
+            console.error("Error al confirmar el pago en el servidor:", error);
+          });
+        }
+      } catch {
+        // reserva inválida: se ignora y queda en la vista actual
+      }
+    }
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }, []);
 
   const handleAuthNavigate = (view: string, email?: string) => {
     if (email) setUserEmail(email);
@@ -104,13 +141,16 @@ export default function App() {
       case "admin":
         return <AdminAgenda onNavigate={navigate} />;
 
+      case "my-bookings":
+        return <MyBookings onNavigate={navigate} userEmail={userEmail} />;
+
       case "admin-booking":
         return (
           <Booking
             onNavigate={navigate}
             onBookingComplete={(data) => {
               setBookingData(data);
-              saveAppointment(data).catch(console.error);
+              saveAppointment(data, "Confirmado").catch(console.error);
             }}
             userEmail={userEmail}
             nextView="admin"
