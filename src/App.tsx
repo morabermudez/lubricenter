@@ -115,35 +115,13 @@ export default function App() {
         );
 
       case "login":
-<<<<<<< HEAD
-        return (
-          <Login
-            onNavigate={(view, email) => {
-              if (email) setUserEmail(email);
-
-              if (view === "admin" || view === "inventory") {
-                setUserRole("employee");
-              } else if (view === "booking" || view === "home") {
-                setUserRole("client");
-              }
-
-              if (view === "back") {
-                setCurrentView(previousView);
-              } else {
-                setCurrentView(view);
-              }
-            }}
-          />
-        );
-
-=======
         return <Login onNavigate={handleAuthNavigate} />;
+
       case "register":
         return <Login 
           initialMode="register"
           onNavigate={handleAuthNavigate} 
         />;
->>>>>>> origin/main
       default:
         return <Welcome onNavigate={navigate} />;
     }
@@ -164,15 +142,9 @@ export default function App() {
         </motion.div>
       </AnimatePresence>
 
-<<<<<<< HEAD
-      <GlobalNavigation
-        currentView={currentView}
-        onNavigate={setCurrentView}
-=======
       <GlobalNavigation 
         currentView={currentView} 
         onNavigate={navigate} 
->>>>>>> origin/main
         userRole={userRole}
       />
     </div>
