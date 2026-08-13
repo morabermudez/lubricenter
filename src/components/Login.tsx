@@ -316,16 +316,6 @@ export default function Login({ onNavigate, initialMode = "login" }: LoginProps)
           </div>
         </form>
 
-        {mode === "login" && (
-          <div className="w-full mt-6 bg-white border border-stone-100 rounded-xl p-4 text-xs text-stone-500 leading-relaxed">
-            <p><strong className="text-rose-900">Cliente demo:</strong> cliente@lubricenter.com / cliente123</p>
-            <p><strong className="text-rose-900">Empleado demo:</strong> empleado@lubricenter.com / empleado123</p>
-
-            <p><strong className="text-amber-800">Jefe demo:</strong> jefe@lubricenter.com / jefe123</p>
-
-          </div>
-        )}
-
         <div className="w-full mt-12 space-y-8">
           <div className="relative flex items-center">
             <div className="flex-grow border-t border-stone-200"></div>
