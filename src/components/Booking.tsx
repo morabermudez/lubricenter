@@ -114,6 +114,13 @@ export default function Booking({
             </h1>
           </div>
           <div className="flex items-center gap-4 relative">
+            <button
+              onClick={() => onNavigate('my-bookings')}
+              className="hidden sm:flex items-center gap-1 text-rose-900 font-bold text-sm hover:bg-rose-50 px-3 py-2 rounded-lg transition-colors"
+            >
+              <span className="material-symbols-outlined text-lg">event</span>
+              Mis Turnos
+            </button>
             <button 
               onClick={() => setShowNotifications(prev => !prev)}
               className="p-2 rounded-full hover:bg-stone-100 transition-colors"

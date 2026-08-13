@@ -21,8 +21,9 @@ export default function GlobalNavigation({ currentView, onNavigate, userRole = '
   const allNavItems = [
     { id: 'home', label: 'Inicio', icon: 'home', roles: ['client', 'employee', 'boss', 'none'] },
     { id: 'booking', label: 'Servicios', icon: 'build', roles: ['client'] },
+    { id: 'my-bookings', label: 'Mis Turnos', icon: 'event', roles: ['client'] },
     { id: 'inventory', label: 'Stock', icon: 'inventory_2', roles: ['employee'] },
-    { id: 'admin', label: 'Citas', icon: 'event_available', roles: ['employee'] },
+    { id: 'admin', label: 'Citas', icon: 'event_available', roles: ['employee', 'boss'] },
     { id: 'boss', label: 'Dashboard', icon: 'monitoring', roles: ['boss'] },
     { id: 'login', label: 'Perfil', icon: 'person', roles: ['client', 'employee', 'boss', 'none'] },
   ];
