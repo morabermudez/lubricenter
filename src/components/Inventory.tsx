@@ -150,7 +150,7 @@ export default function Inventory({ onNavigate }: InventoryProps) {
               />
             </div>
             <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-hide">
-              {['Todos', 'Aceite de Motor', 'Filtros', 'Refrigerantes', 'Encendido'].map((c) => (
+              {['Todos', 'Aceite de Motor', 'Fluidos', 'Transimisión'].map((c) => (
                 <button 
                   key={c} 
                   onClick={() => {
