@@ -522,7 +522,7 @@ export default function AdminAgenda({ onNavigate }: AdminAgendaProps) {
                   <button 
                     onClick={() => {
                        handleStatusChange(String(editingAppointment.id), 'Confirmado');
-                       setEditingAppointment(prev => ({ ...prev, status: 'Confirmado' }));
+                       setEditingAppointment((prev: any) => ({ ...prev, status: 'Confirmado' }));
                     }}
                     className="w-full bg-green-600 text-white py-4 rounded-xl font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-green-600/20"
                   >

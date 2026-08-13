@@ -227,7 +227,7 @@ export default function Inventory({ onNavigate }: InventoryProps) {
               <div className="col-span-1 md:col-span-2 mt-2 md:mt-0 flex flex-col items-center">
                 <p className={`text-xl font-black ${p.critical ? 'text-rose-600' : 'text-[#1a1c1c]'}`}>{p.stock < 10 ? `0${p.stock}` : p.stock}</p>
                 <p className={`text-[10px] uppercase font-bold tracking-tighter ${p.critical ? 'text-rose-600' : 'text-stone-400'}`}>
-                  {p.critical ? 'Stock Bajo' : 'En Stock'}
+                  {p.critical ? 'Stock Bajo' : 'Litros'}
                 </p>
               </div>
               <div className="col-span-1 md:col-span-2 mt-4 md:mt-0 flex justify-end gap-2">

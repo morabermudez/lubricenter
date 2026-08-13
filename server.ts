@@ -88,7 +88,7 @@ const normalizeProduct = (product: any) => ({
   sku: `ACE-${product.id_stock}`,
   category: "Aceites",
   stock: product.cant_stock,
-  critical: product.cant_stock < 10,
+  critical: product.cant_stock < 201,
   icon: "inventory_2",
   description: product.tipo_aceite,
   price: product.precio,

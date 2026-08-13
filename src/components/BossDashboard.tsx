@@ -273,7 +273,7 @@ export default function BossDashboard({ onNavigate }: BossDashboardProps) {
                         {p.stock < 10 ? `0${p.stock}` : p.stock}
                       </p>
                       <p className={`text-[10px] font-bold uppercase ${p.critical ? "text-rose-600" : "text-stone-400"}`}>
-                        {p.critical ? "Stock Bajo" : "En Stock"}
+                        {p.critical ? "Stock Bajo" : "Litros"}
                       </p>
                     </div>
                   </div>
