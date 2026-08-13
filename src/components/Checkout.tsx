@@ -5,6 +5,7 @@
 
 import { useState } from "react";
 import { BookingData } from "../App";
+import { saveAppointment } from "../services/bookingService";
 // Importamos el SDK oficial de Mercado Pago
 import { initMercadoPago } from '@mercadopago/sdk-react';
 
@@ -24,12 +25,18 @@ export default function Checkout({ onNavigate, bookingData }: CheckoutProps) {
   if (!bookingData) return null;
 
   // Función para solicitar la orden de pago y redireccionar de forma directa.
-  // El turno se guarda recién cuando el pago se aprueba (ver Confirmation).
+  // El turno se guarda como Pendiente al momento de pagar: si el pago falla,
+  // queda registrado igual (el webhook lo pasa a Confirmado cuando se aprueba).
   const handlePayment = async () => {
     setIsLoading(true);
+    let savedAppointment: any = null;
     try {
       // Guardamos la reserva pendiente para restaurarla al volver de Mercado Pago.
       localStorage.setItem("lubricenter-pending-booking", JSON.stringify(bookingData));
+
+      // Guardamos el turno como Pendiente ANTES de redirigir a Mercado Pago.
+      savedAppointment = await saveAppointment(bookingData, "Pendiente");
+      const bookingWithAppointmentId = { ...bookingData, appointmentId: savedAppointment?.id };
 
       const priceToSend = bookingData && bookingData.depositPrice ? bookingData.depositPrice : 1500;
       const titleToSend = bookingData && bookingData.oilType ? bookingData.oilType.split(' (')[0] : "Seña de Servicio";
@@ -44,7 +51,7 @@ export default function Checkout({ onNavigate, bookingData }: CheckoutProps) {
           quantity: 1,
           price: priceToSend,
           email: bookingData.email,
-          booking: bookingData,
+          booking: bookingWithAppointmentId,
         }),
       });
 
@@ -57,12 +64,16 @@ export default function Checkout({ onNavigate, bookingData }: CheckoutProps) {
         window.location.href = data.init_point;
       } else {
         localStorage.removeItem("lubricenter-pending-booking");
-        alert("No se guardó el turno: no se pudo generar la orden de pago.");
+        alert("Se guardó tu turno, pero no se pudo generar la orden de pago.");
       }
     } catch (error) {
       console.error("Error al conectar con Mercado Pago:", error);
       localStorage.removeItem("lubricenter-pending-booking");
-      alert("No se guardó el turno: no se pudo conectar con la API de Mercado Pago.");
+      alert(
+        savedAppointment
+          ? "Se guardó tu turno como pendiente, pero no se pudo conectar con la API de Mercado Pago."
+          : "No se guardó el turno: no se pudo conectar con la API de Mercado Pago."
+      );
     } finally {
       setIsLoading(false);
     }

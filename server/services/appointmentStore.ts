@@ -144,13 +144,14 @@ export async function listAppointments(): Promise<any[]> {
 
 export async function createAppointment(payload: any): Promise<any> {
   const list = await readAppointments();
+  const status = payload.status ?? payload.estado ?? "Pendiente";
   const record = {
     ...appointmentPayload(payload),
     id: String(Date.now()),
     date: payload.date || `${payload.day} ${String(payload.month || "").substring(0, 3)}`,
     service: payload.service ?? payload.oilType,
-    status: payload.status ?? payload.estado ?? "Pendiente",
-    color: "rose-900",
+    status,
+    color: status === "Confirmado" ? "emerald-500" : "amber-400",
     createdAt: new Date().toISOString(),
   };
   list.push(record);
@@ -206,6 +207,31 @@ export async function registerApprovedAppointment(
   }
 
   const list = await readAppointments();
+
+  // Si el turno ya se guardó como Pendiente al pagar (con appointmentId en el
+  // external_reference), lo actualizamos a Confirmado en lugar de duplicarlo.
+  const appointmentId = reference?.booking?.appointmentId ?? reference?.appointmentId;
+  const pendingIndex = appointmentId
+    ? list.findIndex((a: any) => String(a.id) === String(appointmentId))
+    : -1;
+
+  if (pendingIndex !== -1) {
+    const pending = list[pendingIndex];
+    if (pending.status !== "Confirmado") {
+      list[pendingIndex] = {
+        ...pending,
+        status: "Confirmado",
+        color: "emerald-500",
+        paymentId: String(paymentId),
+        paymentStatus: payment.status ?? "approved",
+        paymentMethod: payment.payment_method_id,
+        approvedAt: payment.date_approved || new Date().toISOString(),
+      };
+      await writeAppointments(list);
+    }
+    return list[pendingIndex];
+  }
+
   const existingIndex = list.findIndex((a: any) => a.paymentId === String(paymentId));
 
   if (existingIndex !== -1) {
