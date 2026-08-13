@@ -6,7 +6,7 @@ export const fetchAppointments = async () => {
   return response.json();
 };
 
-export const saveAppointment = async (appointment: BookingData) => {
+export const saveAppointment = async (appointment: BookingData, status?: string) => {
   const response = await fetch("/api/appointments", {
     method: "POST",
     headers: {
@@ -14,7 +14,8 @@ export const saveAppointment = async (appointment: BookingData) => {
     },
     body: JSON.stringify({
       ...appointment,
-      date: `${appointment.day} ${appointment.month.substring(0, 3)}`
+      date: `${appointment.day} ${appointment.month.substring(0, 3)}`,
+      ...(status ? { status } : {}),
     }),
   });
   if (!response.ok) throw new Error("Error saving appointment");
@@ -38,5 +39,11 @@ export const updateAppointment = async (id: string, updates: any) => {
     body: JSON.stringify(updates),
   });
   if (!response.ok) throw new Error("Error updating appointment");
+  return response.json();
+};
+
+export const verifyPayment = async (paymentId: string) => {
+  const response = await fetch(`/api/verify_payment?payment_id=${encodeURIComponent(paymentId)}`);
+  if (!response.ok) throw new Error("Error verifying payment");
   return response.json();
 };
