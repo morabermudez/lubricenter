@@ -19,12 +19,6 @@ type StoredUser = {
 
 const STORAGE_KEY = "lubricenter-users";
 
-const demoUsers = {
-  client: { email: "cliente@lubricenter.com", password: "cliente123" },
-  employee: { email: "empleado@lubricenter.com", password: "empleado123" },
-  boss: { email: "jefe@lubricenter.com", password: "jefe123" },
-};
-
 const getStoredUsers = (): StoredUser[] => {
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
@@ -69,9 +63,7 @@ export default function Login({ onNavigate, initialMode = "login" }: LoginProps)
     }
 
     const users = getStoredUsers();
-    const emailExists = users.some(user => user.email === email) ||
-      email === demoUsers.client.email ||
-      email === demoUsers.employee.email;
+    const emailExists = users.some(user => user.email === email);
 
     if (emailExists) {
       setError("Ya existe una cuenta con ese correo.");
@@ -108,9 +100,7 @@ export default function Login({ onNavigate, initialMode = "login" }: LoginProps)
     }
 
     const users = getStoredUsers();
-    const emailExists = users.some(user => user.email === email) ||
-      email === demoUsers.client.email ||
-      email === demoUsers.employee.email;
+    const emailExists = users.some(user => user.email === email);
 
     if (emailExists) {
       setError("Ya existe una cuenta con ese correo.");
@@ -127,7 +117,6 @@ export default function Login({ onNavigate, initialMode = "login" }: LoginProps)
   const handleLogin = (role: "client" | "employee" | "boss") => {
     const email = emailInput.trim().toLowerCase();
     const password = passwordInput.trim();
-    const demoUser = demoUsers[role];
 
     if (!email || !password) {
       setError("Completa el correo y la contraseña para ingresar.");
@@ -135,14 +124,13 @@ export default function Login({ onNavigate, initialMode = "login" }: LoginProps)
       return;
     }
 
-    const isDemoUser = email === demoUser.email && password === demoUser.password;
     const isStoredUser = getStoredUsers().some(user =>
       user.email === email &&
       user.password === password &&
       (user.role || "client") === role
     );
 
-    if (!isDemoUser && !isStoredUser) {
+    if (!isStoredUser) {
       setError("Correo o contraseña incorrectos.");
       setSuccess("");
       return;
@@ -308,9 +296,7 @@ export default function Login({ onNavigate, initialMode = "login" }: LoginProps)
 
         {mode === "login" && (
           <div className="w-full mt-6 bg-white border border-stone-100 rounded-xl p-4 text-xs text-stone-500 leading-relaxed">
-            <p><strong className="text-rose-900">Cliente demo:</strong> cliente@lubricenter.com / cliente123</p>
-            <p><strong className="text-rose-900">Empleado demo:</strong> empleado@lubricenter.com / empleado123</p>
-            <p><strong className="text-amber-800">Jefe demo:</strong> jefe@lubricenter.com / jefe123</p>
+            <p>Ingresá con el correo y la contraseña de tu cuenta.</p>
           </div>
         )}
 
